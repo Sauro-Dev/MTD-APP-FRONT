@@ -1,0 +1,110 @@
+/* Importar la fuente Poppins desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+.navbar {
+  width: 100%;
+  background: #ED117F;
+  padding: 15px 30px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Contenedor principal */
+.navbar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  /* flex-wrap: wrap para que en pantallas reducidas se acomode */
+  flex-wrap: wrap;
+}
+
+/* Logo */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo img {
+  height: 40px;
+  margin-right: 10px;
+}
+
+/* Texto en dos líneas */
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.logo-line1, .logo-line2 {
+  font-size: 1.2rem;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Enlaces */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  /* También puede tener flex-wrap si lo deseas */
+  flex-wrap: wrap;
+}
+
+.navbar-links a {
+  font-size: 1rem;
+  text-decoration: none;
+  color: #ffffff;
+  position: relative;
+  transition: color 0.3s;
+}
+
+/* Efecto subrayado */
+.navbar-links a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: #fff;
+  transition: width 0.3s;
+}
+
+.navbar-links a:hover {
+  color: #ffe4e1;
+}
+
+.navbar-links a:hover::after {
+  width: 100%;
+}
+
+/* Media query para pantallas pequeñas */
+@media (max-width: 768px) {
+  .navbar-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navbar-logo {
+    margin-bottom: 10px;
+  }
+
+  /* Los enlaces se muestran en columna */
+  .navbar-links {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .navbar-links a {
+    margin: 5px 0;
+  }
+}
+

@@ -1,12 +1,12 @@
+// src/app/app.component.ts
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 @Component({
+  standalone: true,
+  // Importamos RouterModule para usar <router-outlet> en el template
+  imports: [RouterModule],
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  template: `<router-outlet></router-outlet>`
 })
-export class AppComponent {
-  title = 'MTD-APP';
-}
+export class AppComponent {}
