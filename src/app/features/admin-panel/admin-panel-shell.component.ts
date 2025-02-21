@@ -1,21 +1,31 @@
-// features/admin-panel/admin-panel-shell.component.ts
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { NavbarComponent} from '../../layouts/navbar/navbar.component';
+import { NavbarComponent } from '../../layouts/navbar/navbar.component';
+import { SidebarComponent } from '../../layouts/sidebar/sidebar.component';
 
 @Component({
   standalone: true,
-  imports: [RouterModule, NavbarComponent],
+  imports: [RouterModule, NavbarComponent, SidebarComponent],
   selector: 'app-admin-panel-shell',
   template: `
-    <app-navbar></app-navbar>
-    <div class="content-container">
-      <router-outlet></router-outlet>
+    <div class="flex flex-col h-screen">
+
+      <app-navbar></app-navbar>
+
+
+      <div class="flex flex-col md:flex-row flex-1">
+
+        <app-sidebar class="md:w-64 w-full"></app-sidebar>
+
+
+        <div class="flex-1 p-5">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     .content-container {
-      margin-top: 70px; /* Ajusta este valor según la altura de la navbar */
       padding: 20px;
     }
   `]

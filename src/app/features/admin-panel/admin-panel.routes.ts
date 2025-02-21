@@ -5,6 +5,7 @@ import { AboutUsControlComponent } from './components/about-us-control/about-us-
 import { FileUploadComponent } from './components/file-upload/file-upload.component';
 import { LibraryComponent } from './components/library/library.component';
 import { SpotifyControlComponent } from './components/spotify-control/spotify-control.component';
+import {BannerComponent} from './components/banner/banner.component';
 
 export const ADMIN_PANEL_ROUTES: Routes = [
   {
@@ -13,8 +14,12 @@ export const ADMIN_PANEL_ROUTES: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'about-us-control',
+        redirectTo: 'banner-upload',
         pathMatch: 'full'
+      },
+      {
+        path: 'banner-upload',
+        component: BannerComponent,
       },
       {
         path: 'about-us-control',

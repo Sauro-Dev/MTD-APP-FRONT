@@ -1,0 +1,22 @@
+/* Fondo blanco y borde sutil */
+aside {
+  background-color: white;
+  border: 1px solid #ddd; /* Borde ligero */
+  color: black;
+}
+
+/* Estilos para los enlaces del menú */
+aside ul li a {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease-in-out;
+  color: black; /* Asegurar que los enlaces sean negros */
+  text-decoration: none;
+}
+
+/* Efecto hover */
+aside ul li a:hover {
+  background-color: #f3f4f6; /* Gris claro al pasar el mouse */
+}
