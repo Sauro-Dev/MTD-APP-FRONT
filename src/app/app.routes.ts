@@ -1,5 +1,5 @@
-// app.routes.ts
 import { Routes } from '@angular/router';
+import {AuthGuard} from './guards/auth.guard';
 
 export const appRoutes: Routes = [
   { path: '', redirectTo: 'admin-panel', pathMatch: 'full' },
@@ -9,6 +9,14 @@ export const appRoutes: Routes = [
       import('./features/admin-panel/admin-panel.routes').then(
         (m) => m.ADMIN_PANEL_ROUTES
       ),
+    canActivate: [AuthGuard],
   },
-  { path: '**', redirectTo: 'admin-panel' }
+  {
+    path: 'no-auth',
+    loadComponent: () =>
+      import('./layouts/no-auth/no-auth.component').then(
+        (m) => m.NoAuthComponent
+      ),
+  },
+  { path: '**', redirectTo: 'admin-panel' },
 ];
