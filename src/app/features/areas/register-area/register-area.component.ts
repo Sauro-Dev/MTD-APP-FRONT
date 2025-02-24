@@ -1,12 +1,14 @@
 import { Component, Output, EventEmitter } from '@angular/core';
-import {AreasService} from '../../../core/services/areas.service';
+import {AreasService, RegisterArea} from '../../../core/services/areas.service';
 import {FormsModule} from '@angular/forms';
+import {NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-register-area',
   templateUrl: './register-area.component.html',
   imports: [
-    FormsModule
+    FormsModule,
+    NgIf
   ],
   styleUrls: ['./register-area.component.css']
 })
@@ -18,7 +20,7 @@ export class RegisterAreaComponent {
   constructor(private areasService: AreasService) {}
 
   registerArea() {
-    const newArea = { name: this.name, color: this.color };
+    const newArea: RegisterArea = { name: this.name, color: this.color };
     this.areasService.registerArea(newArea).subscribe({
       next: () => {
         this.closeModal.emit(true);

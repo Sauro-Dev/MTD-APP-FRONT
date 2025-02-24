@@ -15,6 +15,7 @@ import {CommonModule, NgForOf, NgIf} from '@angular/common';
 export class AreasComponent {
   areas = [{ name: 'Marketing' }];
   showRegisterModal = false;
+  showSuccessModal = false;
 
   openRegisterModal() {
     this.showRegisterModal = true;
@@ -23,7 +24,11 @@ export class AreasComponent {
   closeRegisterModal(confirmed: boolean) {
     this.showRegisterModal = false;
     if (confirmed) {
-      alert('Área registrada correctamente.');
+      this.showSuccessModal = true;
     }
+  }
+
+  closeSuccessModal() {
+    this.showSuccessModal = false;
   }
 }
