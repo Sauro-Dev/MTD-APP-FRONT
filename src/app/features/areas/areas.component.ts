@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {RegisterAreaComponent} from './register-area/register-area.component';
 import {CommonModule, NgForOf, NgIf} from '@angular/common';
+import {UserDetails} from '../../core/interfaces/user-details';
+import {AuthService} from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-areas',
@@ -12,13 +14,26 @@ import {CommonModule, NgForOf, NgIf} from '@angular/common';
   ],
   styleUrls: ['./areas.component.css']
 })
-export class AreasComponent {
+export class AreasComponent implements OnInit {
   areas = [{ name: 'Marketing' }];
   showRegisterModal = false;
   showSuccessModal = false;
+  userDetails: UserDetails | null = null;
+
+  constructor(private authService: AuthService) {}
+
+  ngOnInit(): void {
+    this.authService.getUserDetails().then((user) => {
+      this.userDetails = user;
+    });
+  }
 
   openRegisterModal() {
-    this.showRegisterModal = true;
+    if (this.userDetails?.role === 'ADMIN') {
+      this.showRegisterModal = true;
+    } else {
+      alert('No tienes permisos para registrar un área.');
+    }
   }
 
   closeRegisterModal(confirmed: boolean) {

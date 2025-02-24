@@ -13,7 +13,6 @@ import { SidebarComponent } from '../../shared/ui/layout/sidebar/sidebar.compone
 
         <app-sidebar class="md:w-64 w-full"></app-sidebar>
 
-
         <div class="flex-1 p-5">
           <router-outlet></router-outlet>
         </div>

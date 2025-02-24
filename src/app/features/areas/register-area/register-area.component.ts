@@ -1,14 +1,12 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import {AreasService, RegisterArea} from '../../../core/services/areas.service';
 import {FormsModule} from '@angular/forms';
-import {NgIf} from '@angular/common';
 
 @Component({
   selector: 'app-register-area',
   templateUrl: './register-area.component.html',
   imports: [
-    FormsModule,
-    NgIf
+    FormsModule
   ],
   styleUrls: ['./register-area.component.css']
 })

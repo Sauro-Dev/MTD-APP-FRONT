@@ -5,13 +5,13 @@ import {AuthCheckService} from '../services/auth-check.service';
 @Injectable({
   providedIn: 'root',
 })
-export class AuthGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
   constructor(private authCheckService: AuthCheckService, private router: Router) {}
 
   async canActivate(): Promise<boolean | UrlTree> {
-    const { isAuthenticated } = await this.authCheckService.checkAuthStatus();
-    if (!isAuthenticated) {
-      return this.router.createUrlTree(['/no-auth']);
+    const { isAuthenticated, user } = await this.authCheckService.checkAuthStatus();
+    if (!isAuthenticated || user.role !== 'ADMIN') {
+      return this.router.createUrlTree(['/no-access']);
     }
     return true;
   }

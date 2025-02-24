@@ -44,12 +44,12 @@
       <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium" style="font-family: 'Poppins', sans-serif;">Asistencias</span>
     </div>
     <!-- Icono: Panel de control -->
-    <div class="group relative flex flex-col items-center">
+    <a routerLink="/admin-panel" *ngIf="isAdmin()" class="group relative flex flex-col items-center">
       <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">
         <i class="fa-solid fa-gear text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>
       </div>
       <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium" style="font-family: 'Poppins', sans-serif;">Panel de control</span>
-    </div>
+    </a>
   </div>
 
   <!-- Icono del usuario -->

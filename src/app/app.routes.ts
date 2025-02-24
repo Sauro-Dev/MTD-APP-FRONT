@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/admin.guard';
 
 export const appRoutes: Routes = [
   { path: '', redirectTo: 'admin-panel', pathMatch: 'full' },
@@ -9,7 +10,7 @@ export const appRoutes: Routes = [
       import('./features/admin-panel/admin-panel.routes').then(
         (m) => m.ADMIN_PANEL_ROUTES
       ),
-    canActivate: [AuthGuard],
+    canActivate: [AdminGuard],
   },
   {
     path: 'areas',
@@ -24,6 +25,13 @@ export const appRoutes: Routes = [
     loadComponent: () =>
       import('./auth/no-auth/no-auth.component').then(
         (m) => m.NoAuthComponent
+      ),
+  },
+  {
+    path: 'no-access',
+    loadComponent: () =>
+      import('./auth/no-access/no-access.component').then(
+        (m) => m.NoAccessComponent
       ),
   },
   { path: '**', redirectTo: 'admin-panel' },
