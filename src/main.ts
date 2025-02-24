@@ -1,13 +1,13 @@
-// src/app/main.ts
 import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { appRoutes } from './app/app.routes';
 import { provideRouter } from '@angular/router';
-import { AppComponent} from './app/app.component';
-import { appRoutes} from './app/app.routes';
+import { provideHttpClient } from '@angular/common/http';
 
 bootstrapApplication(AppComponent, {
   providers: [
-    // Inyectamos el router con nuestras rutas
-    provideRouter(appRoutes)
+    provideRouter(appRoutes),
+    provideHttpClient()
   ]
 })
   .catch(err => console.error(err));
