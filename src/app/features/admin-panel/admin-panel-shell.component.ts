@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NavbarComponent } from '../../layouts/navbar/navbar.component';
-import { SidebarComponent } from '../../layouts/sidebar/sidebar.component';
+import { SidebarComponent } from '../../shared/ui/layout/sidebar/sidebar.component';
 
 @Component({
   standalone: true,
