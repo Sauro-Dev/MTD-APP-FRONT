@@ -1,17 +1,13 @@
 import { Component } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { NavbarComponent } from '../../layouts/navbar/navbar.component';
 import { SidebarComponent } from '../../shared/ui/layout/sidebar/sidebar.component';
 
 @Component({
   standalone: true,
-  imports: [RouterModule, NavbarComponent, SidebarComponent],
+  imports: [RouterModule, SidebarComponent],
   selector: 'app-admin-panel-shell',
   template: `
     <div class="flex flex-col h-screen">
-
-      <app-navbar></app-navbar>
-
 
       <div class="flex flex-col md:flex-row flex-1">
 
@@ -25,9 +21,6 @@ import { SidebarComponent } from '../../shared/ui/layout/sidebar/sidebar.compone
     </div>
   `,
   styles: [`
-    .content-container {
-      padding: 20px;
-    }
   `]
 })
 export class AdminPanelShellComponent {}
