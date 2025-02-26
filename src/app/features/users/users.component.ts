@@ -51,7 +51,6 @@ export class UsersComponent implements OnInit {
   loadAreas(): void {
     this.areasService.getAllAreas().subscribe({
       next: (data) => {
-        console.log("🏢 Áreas recibidas:", data);
         this.areas.set(data);
       },
       error: (err) => console.error('Error fetching areas', err),

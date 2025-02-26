@@ -37,7 +37,6 @@ export class AreasComponent implements OnInit {
   loadAreas(): void {
     this.areasService.getAllAreas().subscribe({
       next: (data) => {
-        console.log("🔍 Áreas recibidas del backend:", data);
         this.areas.set(data);
       },
       error: (err) => console.error('❌ Error al obtener áreas:', err),
@@ -47,7 +46,6 @@ export class AreasComponent implements OnInit {
   loadUsers(): void {
     this.usersService.getAllUsers().subscribe({
       next: (data) => {
-        console.log("👤 Usuarios recibidos:", data);
         this.users.set(data);
         this.filteredUsers.set(data);
       },
