@@ -1,10 +1,10 @@
-import {Component, OnInit, signal} from '@angular/core';
-import {ListUser} from '../../core/interfaces/users';
-import {UsersService} from '../../core/services/users.service';
-import {FormsModule} from '@angular/forms';
-import {NgClass, NgForOf} from '@angular/common';
-import {ListArea} from "../../core/interfaces/ListArea";
-import {AreasService} from "../../core/services/areas.service";
+import { Component, OnInit, signal } from '@angular/core';
+import { ListUser } from '../../core/interfaces/users';
+import { UsersService } from '../../core/services/users.service';
+import { FormsModule } from '@angular/forms';
+import { NgClass, NgForOf } from '@angular/common';
+import { ListArea } from "../../core/interfaces/ListArea";
+import { AreasService } from "../../core/services/areas.service";
 
 @Component({
   selector: 'app-users',
@@ -20,7 +20,7 @@ export class UsersComponent implements OnInit {
   users = signal<ListUser[]>([]);
   filteredUsers = signal<ListUser[]>([]);
   areas = signal<ListArea[]>([]);
-  roles = ['ADMIN', 'COORDINATOR', 'COUNCIL'];
+  roles = ['ADMIN', 'COORDINATOR', 'COUNCIL', 'MAKER'];
   searchTerm = signal<string>('');
   selectedRole = signal<string>('');
   selectedArea = signal<string>('');
@@ -38,9 +38,9 @@ export class UsersComponent implements OnInit {
   loadUsers(): void {
     this.usersService.getAllUsers().subscribe({
       next: (data) => {
-        const filtered = data.filter((user) => this.roles.includes(user.role));
-        this.users.set(filtered);
-        this.filterUsers(); // Aplicamos filtro inicial
+        console.log("👤 Usuarios recibidos:", data);
+        this.users.set(data);
+        this.filterUsers();
       },
       error: (err) => console.error('Error fetching users', err),
     });
@@ -49,10 +49,23 @@ export class UsersComponent implements OnInit {
   loadAreas(): void {
     this.areasService.getAllAreas().subscribe({
       next: (data) => {
+        console.log("🏢 Áreas recibidas:", data);
         this.areas.set(data);
       },
       error: (err) => console.error('Error fetching areas', err),
     });
+  }
+
+  getUserArea(user: ListUser): string {
+    if (user.area && typeof user.area === 'object' && 'name' in user.area) {
+      return user.area.name;
+    }
+
+    if (user.area && typeof user.area === 'string') {
+      return user.area;
+    }
+
+    return "Sin área asignada";
   }
 
   filterUsers(): void {
@@ -71,11 +84,11 @@ export class UsersComponent implements OnInit {
     }
 
     if (this.selectedArea()) {
-      result = result.filter(user => user.region === this.selectedArea()); // Filtra por área
+      result = result.filter(user => this.getUserArea(user) === this.selectedArea());
     }
 
     this.filteredUsers.set(result);
-    this.currentPage.set(1); // Reiniciar paginación
+    this.currentPage.set(1);
   }
 
   sortUsers(): void {

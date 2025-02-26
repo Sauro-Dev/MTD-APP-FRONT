@@ -8,13 +8,14 @@ export interface ListUser {
   dni: string;
   email: string;
   age: number;
-  birthdate: Date;
+  birthdate: string;
   phoneNumber: string;
   codeNumber: string;
   country: string;
   region: string;
   motivation: string;
   estimatedHours: string;
+  area?: { id: number, name: string };
 }
 
 export interface MyProfile {
