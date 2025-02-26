@@ -108,7 +108,7 @@ export class FileUploadComponent implements OnInit {
       } else {
         this.selectedMagazineFile = null;
       }
-    }, error => {
+    }, () => {
       alert('Error al subir el archivo.');
     });
   }

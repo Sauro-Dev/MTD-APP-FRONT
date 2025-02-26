@@ -1,0 +1,85 @@
+<div class="p-6">
+  <h1 class="text-2xl font-bold">Usuarios</h1>
+
+  <!-- Botón "Formularios" -->
+  <div class="mt-4">
+    <button class="px-6 py-2 bg-teal-500 text-white rounded-md font-semibold hover:bg-teal-600">
+      Formularios
+    </button>
+  </div>
+
+  <!-- Controles de búsqueda y filtros -->
+  <div class="flex flex-wrap gap-4 mt-6 items-center bg-gray-100 p-4 rounded-md shadow-md">
+    <!-- Input de búsqueda con ícono -->
+    <div class="relative w-full max-w-md">
+      <input
+        type="text"
+        class="pl-10 pr-4 py-2 border rounded-md w-full bg-yellow-200"
+        placeholder="Buscar..."
+        [(ngModel)]="searchTerm"
+        (input)="filterUsers()"
+      />
+      <i class="fa-solid fa-search absolute left-3 top-3 text-gray-600"></i>
+    </div>
+
+    <!-- Filtros por Área y Rol -->
+    <select
+      class="px-4 py-2 border rounded-md"
+      [(ngModel)]="selectedArea"
+      (change)="filterUsers()"
+    >
+      <option value="">Todas las Áreas</option>
+      <option *ngFor="let area of areas()" [value]="area.name">{{ area.name }}</option>
+    </select>
+
+    <select
+      class="px-4 py-2 border rounded-md"
+      [(ngModel)]="selectedRole"
+      (change)="filterUsers()"
+    >
+      <option value="">Todos los Roles</option>
+      <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+    </select>
+
+    <!-- Botón de Ordenamiento -->
+    <button
+      class="px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-600 flex items-center"
+      (click)="sortUsers()"
+    >
+        <i [ngClass]="sortAscending() ? 'fa-solid fa-sort-alpha-down' : 'fa-solid fa-sort-alpha-up'"></i>
+    </button>
+  </div>
+
+  <!-- Lista de Usuarios -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
+    <div *ngFor="let user of getPaginatedUsers()" class="bg-white shadow-lg rounded-lg p-6 text-center">
+      <h2 class="text-lg font-semibold">{{ user.name }} {{ user.paternalSurname }}</h2>
+      <p class="text-sm text-gray-500">{{ user.role }}</p>
+      <p class="text-sm text-gray-500">Área: {{ user.region }}</p>
+      <button class="mt-4 px-4 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600">
+        Ver Detalles
+      </button>
+    </div>
+  </div>
+
+  <!-- Paginación -->
+  <div class="flex justify-center mt-6 gap-4">
+    <button
+      class="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700"
+      (click)="prevPage()"
+      [disabled]="currentPage() === 1"
+    >
+      <i class="fa-solid fa-angle-left"></i>
+    </button>
+    <span class="px-4 py-2 bg-gray-200 rounded-md">
+      Página {{ currentPage() }}
+    </span>
+    <button
+      class="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700"
+      (click)="nextPage()"
+      [disabled]="currentPage() >= Math.ceil(filteredUsers().length / usersPerPage())"
+    >
+      <i class="fa-solid fa-angle-right"></i>
+    </button>
+  </div>
+</div>

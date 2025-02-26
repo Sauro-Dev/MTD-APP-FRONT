@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-no-auth',
@@ -7,7 +6,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./no-auth.component.css']
 })
 export class NoAuthComponent {
-  constructor(private router: Router) {}
+  constructor() {}
 
   redirectToLanding() {
     window.location.href = 'http://localhost:5173';

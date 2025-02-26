@@ -1,17 +1,68 @@
-<div class="container mx-auto p-4 border rounded">
-  <h1 class="text-2xl font-bold">
-    Lista de Áreas
-    <i
-      *ngIf="userDetails?.role === 'ADMIN'"
-      class="fa-solid fa-plus cursor-pointer"
-      (click)="openRegisterModal()"
-    ></i>
-  </h1>
-  <div *ngFor="let area of areas" class="mt-4 p-4 bg-gray-100 rounded flex items-center justify-between">
-    <span class="text-lg">{{ area.name }}</span>
-    <div class="flex gap-4">
-      <i class="fa-solid fa-pen-to-square cursor-pointer"></i>
-      <i class="fa-solid fa-user-plus cursor-pointer"></i>
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold">Áreas</h1>
+
+  <div class="flex gap-6 mt-6">
+    <!-- Lista de Áreas -->
+    <div class="bg-white shadow-lg rounded-lg p-4 w-1/4 border">
+      <h2 class="text-lg font-semibold flex items-center justify-between">
+        Lista de Áreas
+        <i
+          *ngIf="userDetails?.role === 'ADMIN'"
+          class="fa-solid fa-plus cursor-pointer"
+          (click)="openRegisterModal()"
+        ></i>
+      </h2>
+
+      <div class="mt-4">
+        <div *ngFor="let area of areas()"
+             class="p-4 rounded flex items-center justify-between mt-2"
+             [ngStyle]="{ 'background-color': area.color || '#f3f3f3' }">
+          <span class="text-lg font-semibold text-white">{{ area.name }}</span>
+          <div class="flex gap-4">
+            <i class="fa-solid fa-pen-to-square cursor-pointer text-white"></i>
+            <i class="fa-solid fa-user-plus cursor-pointer text-white"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de Usuarios (Buscar y Listado) -->
+    <div class="bg-white shadow-lg rounded-lg p-4 w-3/4 border">
+      <!-- Input de búsqueda de usuarios -->
+      <div class="relative w-full max-w-md mb-4">
+        <input
+          type="text"
+          class="pl-10 pr-4 py-2 border rounded-md w-full bg-yellow-200"
+          placeholder="Buscar usuarios..."
+          [(ngModel)]="searchTerm"
+          (input)="filterUsers()"
+        />
+        <i class="fa-solid fa-search absolute left-3 top-3 text-gray-600"></i>
+      </div>
+
+      <table class="w-full border-collapse border">
+        <thead>
+        <tr class="bg-gray-200">
+          <th class="p-3 border"><input type="checkbox"></th>
+          <th class="p-3 border">Nombres <i class="fa-solid fa-sort"></i></th>
+          <th class="p-3 border">Apellidos <i class="fa-solid fa-sort"></i></th>
+          <th class="p-3 border">Rol</th>
+          <th class="p-3 border">Acción</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let user of filteredUsers()" class="text-center border">
+          <td class="p-3 border"><input type="checkbox"></td>
+          <td class="p-3 border">{{ user.name }}</td>
+          <td class="p-3 border">{{ user.paternalSurname }} {{ user.maternalSurname }}</td>
+          <td class="p-3 border">{{ user.role }}</td>
+          <td class="p-3 border">
+            <i class="fa-solid fa-user cursor-pointer"></i>
+            <i class="fa-solid fa-xmark cursor-pointer ml-2"></i>
+          </td>
+        </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
