@@ -2,11 +2,9 @@
   <h2 class="text-3xl font-bold mb-6 text-gray-800">Subir Archivos</h2>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
     <!-- 📰 Sección de Noticias -->
     <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
       <h3 class="text-2xl font-semibold text-gray-800 mb-4">Noticias (PDF)</h3>
-
       <div
         class="border-2 border-dashed p-6 text-center cursor-pointer rounded-lg transition"
         [ngClass]="{'border-blue-500 bg-blue-100': draggingNews, 'border-gray-300 hover:bg-gray-100': !draggingNews}"
@@ -17,35 +15,83 @@
       >
         <i class="fa-solid fa-cloud-upload-alt text-4xl text-gray-500 mb-2"></i>
         <p class="text-gray-600 font-semibold">Arrastra o haz clic para subir un archivo PDF</p>
-        <input type="file" class="hidden" #fileInputNews (change)="onFileSelected($event, 'news')" accept="application/pdf">
+        <input
+          type="file"
+          class="hidden"
+          #fileInputNews
+          (change)="onFileSelected($event, 'news')"
+          accept="application/pdf"
+        >
       </div>
-
       <div class="mt-4 p-3 bg-gray-100 rounded-lg" *ngIf="selectedNewsFile">
         <i class="fa-solid fa-file-pdf text-red-500"></i>
         <strong class="ml-2 text-gray-800">{{ selectedNewsFile.name }}</strong>
       </div>
-
       <button
-        class="mt-4 bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition w-full"
+        [disabled]="!selectedNewsFile"
+        class="mt-4 bg-[#ED117F] text-white px-5 py-2 rounded-lg hover:bg-[#D0106F] transition w-full disabled:opacity-50 disabled:cursor-not-allowed"
         (click)="uploadFile('news')"
       >
         <i class="fa-solid fa-upload"></i> Confirmar subida
+        <i *ngIf="selectedNewsFile" class="fa-solid fa-check ml-2"></i>
       </button>
     </div>
 
-    <!-- 📂 Sección de Archivos Subidos - Noticias -->
+    <!-- Sección de Archivos Subidos - Noticias -->
     <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
       <h3 class="text-2xl font-semibold text-gray-800 mb-4">Archivos Subidos - Noticias</h3>
-      <p class="text-gray-500 italic">Aquí aparecerán los archivos subidos previamente...</p>
-      <div class="mt-4 h-40 border border-gray-300 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-        (Espacio reservado para la lista de archivos)
+      <!-- Se muestran solo los 4 archivos más recientes; si no hay archivos se muestra mensaje -->
+      <div class="max-h-64 overflow-hidden">
+        <ng-container *ngIf="uploadedNewsFiles.length > 0; else noNews">
+          <ul class="divide-y divide-gray-200">
+            <li *ngFor="let file of uploadedNewsFiles | slice:0:4" class="flex items-center justify-between py-2">
+              <div class="flex items-center">
+                <i class="fa-solid fa-file-pdf text-red-500 mr-2 text-2xl"></i>
+                <span class="text-gray-800">{{ file.displayName }}</span>
+              </div>
+            </li>
+          </ul>
+        </ng-container>
+        <ng-template #noNews>
+          <p class="text-gray-500 italic text-center">Parece que aún no has subido noticias.</p>
+        </ng-template>
+      </div>
+      <!-- Botón para ver más archivos centrado (solo se muestra si hay más de 4 archivos) -->
+      <div class="mt-4 flex justify-center" *ngIf="uploadedNewsFiles.length > 4">
+        <button class="bg-black bg-opacity-50 text-white px-2 py-1 rounded w-auto"
+                (click)="openAllFilesModal('news')">
+          Ver más
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal para archivos de Noticias -->
+    <div *ngIf="showAllFilesModal && currentSector === 'news'" class="modal-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-[600px]">
+        <h3 class="text-xl font-semibold mb-4">Selecciona archivos para descargar (Noticias)</h3>
+        <div class="max-h-64 overflow-y-auto custom-scrollbar mb-4">
+          <ul class="divide-y divide-gray-200">
+            <li *ngFor="let file of uploadedNewsFiles" class="flex items-center justify-between py-2">
+              <div class="flex items-center">
+                <input type="checkbox" [checked]="isSelected(file)" (change)="toggleFileSelection(file)" class="mr-2">
+                <i class="fa-solid fa-file-pdf text-red-500 mr-2 text-2xl"></i>
+                <span class="text-gray-800">{{ file.displayName }}</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="flex justify-end space-x-2">
+          <button class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500" (click)="closeAllFilesModal()">Cancelar</button>
+          <button class="bg-[#ED117F] text-white px-4 py-2 rounded hover:bg-[#D0106F]" (click)="downloadSelectedFiles()">
+            Seleccionar
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- 📖 Sección de Revistas -->
     <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
       <h3 class="text-2xl font-semibold text-gray-800 mb-4">Revistas (PDF)</h3>
-
       <div
         class="border-2 border-dashed p-6 text-center cursor-pointer rounded-lg transition"
         [ngClass]="{'border-green-500 bg-green-100': draggingMagazine, 'border-gray-300 hover:bg-gray-100': !draggingMagazine}"
@@ -56,30 +102,87 @@
       >
         <i class="fa-solid fa-cloud-upload-alt text-4xl text-gray-500 mb-2"></i>
         <p class="text-gray-600 font-semibold">Arrastra o haz clic para subir un archivo PDF</p>
-        <input type="file" class="hidden" #fileInputMagazine (change)="onFileSelected($event, 'magazine')" accept="application/pdf">
+        <input
+          type="file"
+          class="hidden"
+          #fileInputMagazine
+          (change)="onFileSelected($event, 'magazine')"
+          accept="application/pdf"
+        >
       </div>
-
       <div class="mt-4 p-3 bg-gray-100 rounded-lg" *ngIf="selectedMagazineFile">
         <i class="fa-solid fa-file-pdf text-red-500"></i>
         <strong class="ml-2 text-gray-800">{{ selectedMagazineFile.name }}</strong>
       </div>
-
       <button
-        class="mt-4 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition w-full"
+        [disabled]="!selectedMagazineFile"
+        class="mt-4 bg-[#ED117F] text-white px-5 py-2 rounded-lg hover:bg-[#D0106F] transition w-full disabled:opacity-50 disabled:cursor-not-allowed"
         (click)="uploadFile('magazine')"
       >
         <i class="fa-solid fa-upload"></i> Confirmar subida
+        <i *ngIf="selectedMagazineFile" class="fa-solid fa-check ml-2"></i>
       </button>
     </div>
 
-    <!-- 📂 Sección de Archivos Subidos - Revistas -->
+    <!-- Sección de Archivos Subidos - Revistas -->
     <div class="bg-white shadow-lg rounded-lg p-6 border border-gray-200">
       <h3 class="text-2xl font-semibold text-gray-800 mb-4">Archivos Subidos - Revistas</h3>
-      <p class="text-gray-500 italic">Aquí aparecerán los archivos subidos previamente...</p>
-      <div class="mt-4 h-40 border border-gray-300 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400">
-        (Espacio reservado para la lista de archivos)
+      <!-- Se muestran solo los 4 archivos más recientes; si no hay, se muestra mensaje -->
+      <div class="max-h-64 overflow-hidden">
+        <ng-container *ngIf="uploadedMagazinesFiles.length > 0; else noMagazines">
+          <ul class="divide-y divide-gray-200">
+            <li *ngFor="let file of uploadedMagazinesFiles | slice:0:4" class="flex items-center justify-between py-2">
+              <div class="flex items-center">
+                <i class="fa-solid fa-file-pdf text-red-500 mr-2 text-2xl"></i>
+                <span class="text-gray-800">{{ file.displayName }}</span>
+              </div>
+            </li>
+          </ul>
+        </ng-container>
+        <ng-template #noMagazines>
+          <p class="text-gray-500 italic text-center">Parece que aún no has subido revistas.</p>
+        </ng-template>
+      </div>
+      <!-- Botón para ver más archivos centrado (solo se muestra si hay más de 4 archivos) -->
+      <div class="mt-4 flex justify-center" *ngIf="uploadedMagazinesFiles.length > 4">
+        <button class="bg-black bg-opacity-50 text-white px-2 py-1 rounded w-auto"
+                (click)="openAllFilesModal('magazine')">
+          Ver más
+        </button>
       </div>
     </div>
 
+    <!-- Modal para archivos de Revistas -->
+    <div *ngIf="showAllFilesModal && currentSector === 'magazine'" class="modal-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-[600px]">
+        <h3 class="text-xl font-semibold mb-4">Selecciona archivos para descargar (Revistas)</h3>
+        <div class="max-h-64 overflow-y-auto custom-scrollbar mb-4">
+          <ul class="divide-y divide-gray-200">
+            <li *ngFor="let file of uploadedMagazinesFiles" class="flex items-center justify-between py-2">
+              <div class="flex items-center">
+                <input type="checkbox" [checked]="isSelected(file)" (change)="toggleFileSelection(file)" class="mr-2">
+                <i class="fa-solid fa-file-pdf text-red-500 mr-2 text-2xl"></i>
+                <span class="text-gray-800">{{ file.displayName }}</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="flex justify-end space-x-2">
+          <button class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500" (click)="closeAllFilesModal()">Cancelar</button>
+          <button class="bg-[#ED117F] text-white px-4 py-2 rounded hover:bg-[#D0106F]" (click)="downloadSelectedFiles()">
+            Seleccionar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmación para subir archivos -->
+    <div *ngIf="showModal" [ngClass]="{'leave': isClosing}" class="modal-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-80 text-center">
+        <h3 class="text-xl font-semibold mb-4">Confirmación</h3>
+        <p class="mb-6">{{ modalMessage }}</p>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" (click)="closeModal()">Cerrar</button>
+      </div>
+    </div>
   </div>
 </div>
