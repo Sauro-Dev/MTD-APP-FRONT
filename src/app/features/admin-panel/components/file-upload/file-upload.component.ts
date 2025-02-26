@@ -205,7 +205,6 @@ export class FileUploadComponent implements OnInit {
       },
       error: (err) => {
         alert('Error al subir el archivo.');
-<<<<<<< Updated upstream
       }
     });
   }
@@ -238,45 +237,6 @@ export class FileUploadComponent implements OnInit {
         console.error('Error descargando archivo:', err);
         alert('Error al descargar el archivo.');
       }
-<<<<<<< Updated upstream
-    }, () => {
-      alert('Error al subir el archivo.');
-=======
->>>>>>> Stashed changes
-=======
-      }
-    });
-  }
-
-  closeModal(): void {
-    this.isClosing = true;
-    setTimeout(() => {
-      this.showModal = false;
-      this.isClosing = false;
-    }, 300);
-  }
-
-  downloadFile(file: LandingFile): void {
-    const fileId = file.idLandingFiles || (file as any).id;
-    if (!fileId) {
-      console.error('No se encontró el ID del archivo:', file);
-      alert('Error: no se encontró el ID del archivo.');
-      return;
-    }
-    this.landingFileService.getFileById(fileId).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = file.displayName || file.fileName;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: (err) => {
-        console.error('Error descargando archivo:', err);
-        alert('Error al descargar el archivo.');
-      }
->>>>>>> Stashed changes
     });
   }
 }
