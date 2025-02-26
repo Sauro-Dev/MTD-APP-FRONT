@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './core/guards/auth.guard';
-import { AdminGuard } from './core/guards/admin.guard';
+import { UsersGuard } from './core/guards/users.guard';
+import {AdminGuard} from './core/guards/admin.guard';
+import {AuthGuard} from './core/guards/auth.guard';
+import {UsersComponent} from './features/users/users.component';
 
 export const appRoutes: Routes = [
   { path: '', redirectTo: 'admin-panel', pathMatch: 'full' },
@@ -19,6 +21,11 @@ export const appRoutes: Routes = [
         (m) => m.AreasComponent
       ),
     canActivate: [AuthGuard],
+  },
+  {
+    path: 'users',
+    component: UsersComponent,
+    canActivate: [UsersGuard],
   },
   {
     path: 'no-auth',

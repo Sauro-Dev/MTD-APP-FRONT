@@ -1,13 +1,15 @@
 import {Inject, Injectable, PLATFORM_ID} from '@angular/core';
-import { Observable, of } from 'rxjs';
-import {environment} from '../environment';
-import {UserDetails} from '../interfaces/user-details';
 import {isPlatformBrowser} from '@angular/common';
+import {Observable, of} from 'rxjs';
+import {environment} from '../environment';
+import {UserDetails} from '../interfaces/users';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
+  private tokenKey = 'token';
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
 
   readTokenFromUrl(): void {
@@ -15,28 +17,26 @@ export class AuthService {
       const urlParams = new URLSearchParams(window.location.search);
       const tokenFromUrl = urlParams.get('token');
       if (tokenFromUrl) {
-        localStorage.setItem('token', tokenFromUrl);
+        localStorage.setItem(this.tokenKey, tokenFromUrl);
+        console.log("🔑 Token guardado desde URL:", tokenFromUrl);
       }
     }
   }
 
-  validateToken(): Observable<boolean> {
+  getToken(): string | null {
     if (isPlatformBrowser(this.platformId)) {
-      const token = localStorage.getItem('token');
-      return of(!!token);
+      return localStorage.getItem(this.tokenKey);
     }
-    return of(false);
+    return null;
+  }
+
+  validateToken(): Observable<boolean> {
+    return of(!!this.getToken());
   }
 
   async getUserDetails(): Promise<UserDetails | null> {
-    if (!isPlatformBrowser(this.platformId)) {
-      return null;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      return null;
-    }
+    const token = this.getToken();
+    if (!token) return null;
 
     try {
       const response = await fetch(`${environment.apiUrl}/users/me`, {
@@ -46,6 +46,7 @@ export class AuthService {
           'Authorization': `Bearer ${token}`,
         },
       });
+
       if (response.ok) {
         return await response.json() as UserDetails;
       } else {

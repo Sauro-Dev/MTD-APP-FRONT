@@ -2,7 +2,7 @@ import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
-import {environment} from '../environment';
+import { environment } from '../environment';
 
 @Injectable({
   providedIn: 'root',
@@ -17,14 +17,12 @@ export class AuthCheckService {
   async checkAuthStatus(): Promise<{ isAuthenticated: boolean; user: any }> {
     if (!isPlatformBrowser(this.platformId)) {
       console.warn("🚫 SSR detectado: Saltando validación de localStorage.");
-      await this.router.navigate(['/no-auth']);
       return { isAuthenticated: false, user: null };
     }
 
-    const token = localStorage.getItem('token');
+    const token = this.authService.getToken();
     if (!token) {
       console.warn("🚫 No hay token, redirigiendo a /no-auth.");
-      await this.router.navigate(['/no-auth']);
       return { isAuthenticated: false, user: null };
     }
 
@@ -32,7 +30,6 @@ export class AuthCheckService {
     if (!isValid) {
       console.warn("🚫 Token inválido, eliminando y redirigiendo a /no-auth.");
       localStorage.removeItem("token");
-      await this.router.navigate(['/no-auth']);
       return { isAuthenticated: false, user: null };
     }
 

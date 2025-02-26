@@ -1,23 +1,23 @@
-import {Component, OnInit} from '@angular/core';
-import {CommonModule, NgIf, NgOptimizedImage} from '@angular/common';
-import {RouterLink} from '@angular/router';
+import { Component } from '@angular/core';
+import {UserDetails} from '../../../../core/interfaces/users';
 import {AuthService} from '../../../../core/services/auth.service';
-import {UserDetails} from '../../../../core/interfaces/user-details';
+import {NgIf, NgOptimizedImage} from '@angular/common';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css'],
   imports: [
-    NgIf, CommonModule, NgOptimizedImage, RouterLink
+    NgIf,
+    NgOptimizedImage,
+    RouterLink
   ]
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent {
   userDetails: UserDetails | null = null;
 
-  constructor(private authService: AuthService) {}
-
-  ngOnInit(): void {
+  constructor(private authService: AuthService) {
     this.authService.getUserDetails().then((user) => {
       this.userDetails = user;
     });
