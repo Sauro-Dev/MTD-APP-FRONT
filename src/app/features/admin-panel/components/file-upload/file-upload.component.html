@@ -57,7 +57,7 @@
         </ng-template>
       </div>
       <!-- Botón para ver más archivos centrado (solo se muestra si hay más de 4 archivos) -->
-      <div class="mt-4 flex justify-center" *ngIf="uploadedNewsFiles.length > 4">
+      <div class="mt-4 flex justify-center" *ngIf="uploadedNewsFiles.length > 0">
         <button class="bg-black bg-opacity-50 text-white px-2 py-1 rounded w-auto"
                 (click)="openAllFilesModal('news')">
           Ver más
@@ -144,7 +144,7 @@
         </ng-template>
       </div>
       <!-- Botón para ver más archivos centrado (solo se muestra si hay más de 4 archivos) -->
-      <div class="mt-4 flex justify-center" *ngIf="uploadedMagazinesFiles.length > 4">
+      <div class="mt-4 flex justify-center" *ngIf="uploadedMagazinesFiles.length > 0">
         <button class="bg-black bg-opacity-50 text-white px-2 py-1 rounded w-auto"
                 (click)="openAllFilesModal('magazine')">
           Ver más
