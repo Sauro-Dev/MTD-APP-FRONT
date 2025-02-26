@@ -24,4 +24,9 @@ export class AreasService {
 
     return this.http.post(`${this.apiUrl}/register`, area, { headers });
   }
+
+  // Metodo para obtener las áreas disponibles
+  getPublicAreas(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/public/all`);
+  }
 }

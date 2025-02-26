@@ -3,6 +3,7 @@ import {RegisterAreaComponent} from './register-area/register-area.component';
 import {CommonModule, NgForOf, NgIf} from '@angular/common';
 import {UserDetails} from '../../core/interfaces/user-details';
 import {AuthService} from '../../core/services/auth.service';
+import { AreasService } from '../../core/services/areas.service';
 
 @Component({
   selector: 'app-areas',
@@ -15,16 +16,30 @@ import {AuthService} from '../../core/services/auth.service';
   styleUrls: ['./areas.component.css']
 })
 export class AreasComponent implements OnInit {
-  areas = [{ name: 'Marketing' }];
+  areas: any[] = [];
   showRegisterModal = false;
   showSuccessModal = false;
   userDetails: UserDetails | null = null;
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private areasService: AreasService) {}
 
   ngOnInit(): void {
     this.authService.getUserDetails().then((user) => {
       this.userDetails = user;
+    });
+
+    // Llamar al servicio para obtener las áreas disponibles
+    this.loadAreas();
+  }
+
+  loadAreas() {
+    this.areasService.getPublicAreas().subscribe({
+      next: (data) => {
+        this.areas = data;
+      },
+      error: () => {
+        alert('Error al cargar las áreas');
+      }
     });
   }
 
@@ -40,6 +55,7 @@ export class AreasComponent implements OnInit {
     this.showRegisterModal = false;
     if (confirmed) {
       this.showSuccessModal = true;
+      this.loadAreas(); // Recargar la lista de áreas después de crear una nueva
     }
   }
 
