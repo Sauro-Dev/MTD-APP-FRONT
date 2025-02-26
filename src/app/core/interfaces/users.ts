@@ -15,7 +15,7 @@ export interface ListUser {
   region: string;
   motivation: string;
   estimatedHours: string;
-  area?: { id: number, name: string };
+  area: { name: string } | string;
 }
 
 export interface MyProfile {

@@ -31,7 +31,7 @@ export class AreasComponent implements OnInit {
       this.userDetails = user;
     });
     this.loadAreas();
-    this.loadUsers(); // ✅ Cargar usuarios
+    this.loadUsers();
   }
 
   loadAreas(): void {

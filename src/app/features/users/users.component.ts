@@ -38,11 +38,13 @@ export class UsersComponent implements OnInit {
   loadUsers(): void {
     this.usersService.getAllUsers().subscribe({
       next: (data) => {
-        console.log("👤 Usuarios recibidos:", data);
         this.users.set(data);
         this.filterUsers();
       },
-      error: (err) => console.error('Error fetching users', err),
+      error: (err) => {
+        console.error('Error fetching users', err);
+        alert('Error al cargar usuarios. Por favor, intenta más tarde.');
+      },
     });
   }
 
@@ -57,15 +59,9 @@ export class UsersComponent implements OnInit {
   }
 
   getUserArea(user: ListUser): string {
-    if (user.area && typeof user.area === 'object' && 'name' in user.area) {
-      return user.area.name;
-    }
-
-    if (user.area && typeof user.area === 'string') {
-      return user.area;
-    }
-
-    return "Sin área asignada";
+    const area = user.area;
+    if (typeof area === 'object' && area?.name) return area.name;
+    return typeof area === 'string' ? area : 'Sin área asignada';
   }
 
   filterUsers(): void {
@@ -108,14 +104,15 @@ export class UsersComponent implements OnInit {
   }
 
   nextPage(): void {
-    if (this.currentPage() < Math.ceil(this.filteredUsers().length / this.usersPerPage())) {
-      this.currentPage.set(this.currentPage() + 1);
+    const totalPages = Math.ceil(this.filteredUsers().length / this.usersPerPage());
+    if (this.currentPage() < totalPages) {
+      this.currentPage.update(current => current + 1);
     }
   }
 
   prevPage(): void {
     if (this.currentPage() > 1) {
-      this.currentPage.set(this.currentPage() - 1);
+      this.currentPage.update(current => current - 1);
     }
   }
 

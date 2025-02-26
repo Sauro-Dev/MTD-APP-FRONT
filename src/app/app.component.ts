@@ -3,6 +3,7 @@ import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import {isPlatformBrowser, NgIf} from '@angular/common';
 import { AuthService } from './core/services/auth.service';
 import { NavbarComponent } from './shared/ui/layout/navbar/navbar.component';
+import {AuthCheckService} from './core/services/auth-check.service';
 
 @Component({
   selector: 'app-root',
@@ -12,6 +13,7 @@ import { NavbarComponent } from './shared/ui/layout/navbar/navbar.component';
 export class AppComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private authService = inject(AuthService);
+  private authCheckService = inject(AuthCheckService);
   private router = inject(Router);
   showNavbar = true;
 
@@ -23,18 +25,19 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
-      this.authService.validateToken().subscribe(isValid => {
-        if (!isValid) {
-          console.warn('Redirigiendo a /no-auth por token inválido...');
-          void this.router.navigate(['/no-auth']);
-        }
-      });
-
-      this.router.events.subscribe(event => {
-        if (event instanceof NavigationEnd) {
-          this.showNavbar = !event.url.includes('/no-auth');
+      this.authService.readTokenFromUrl();
+      this.authCheckService.checkAuthStatus().then(({ isAuthenticated }) => {
+        if (!isAuthenticated) {
+          void this.router.navigateByUrl('/no-auth');
         }
       });
     }
-  }
+
+      this.router.events.subscribe(event => {
+        if (event instanceof NavigationEnd) {
+          this.showNavbar = !['/no-auth', '/no-access'].includes(event.url);
+        }
+      });
+    }
 }
+
