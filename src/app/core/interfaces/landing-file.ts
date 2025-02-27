@@ -2,7 +2,7 @@ export interface LandingFile {
   idLandingFiles: number;
   fileTypes: string;
   fileName: string;
-  fileSector: 'NEWS' | 'MAGAZINE';
+  fileSector: 'NEWS' | 'MAGAZINE' | 'BANNER';
   adminId?: number;
-  displayName?: string; // propiedad opcional agregada
+  displayName?: string;
 }

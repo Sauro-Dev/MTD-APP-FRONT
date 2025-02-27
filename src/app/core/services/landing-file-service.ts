@@ -15,10 +15,10 @@ export class LandingFileService {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('adminId', adminId.toString());
-    formData.append('fileSector', fileSector); // <= 'NEWS' o 'MAGAZINE'
+    formData.append('fileSector', fileSector);
+
     return this.http.post<LandingFile>(`${this.baseUrl}/register`, formData);
   }
-
 
   getFileById(id: number): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${id}`, { responseType: 'blob' });
