@@ -1,1 +1,51 @@
-<p>about-us-control works!</p>
+<div class="p-6 bg-white shadow-md rounded-md">
+  <h1 class="text-2xl font-bold mb-4">Maker Destacado ({{ makers.length }}/10)</h1>
+
+  <div class="grid grid-cols-3 gap-4">
+    <div *ngFor="let maker of makers" class="text-center">
+      <img *ngIf="makers.length > 0"
+           [ngSrc]="getSafeImageUrl(maker)"
+           width="500" height="500"
+           priority
+           alt="Maker Destacado"
+           class="w-full rounded-md shadow-lg" />
+
+      <p class="mt-2 font-semibold">{{ maker.makerName }}</p>
+      <p class="text-gray-500 text-sm italic">{{ maker.description }}</p>
+      <div class="flex justify-center mt-2">
+        <button (click)="deleteMaker(maker.idLandingFiles)" class="bg-red-500 text-white px-4 py-2 rounded mr-2">
+          Eliminar
+        </button>
+        <button class="bg-blue-500 text-white px-4 py-2 rounded">Editar</button>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="text-xl font-semibold mt-6 mb-2">Agregar Maker destacado</h2>
+
+  <div class="border-dashed border-2 border-gray-300 p-6 rounded-md text-center cursor-pointer"
+       (dragover)="onDragOver($event)" (drop)="onDrop($event)" (click)="fileInput.click()"
+       [class.opacity-50]="makers.length >= 10">
+    <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/webp" hidden />
+    <span class="text-gray-500">Elige una imagen o arrástrala acá</span>
+  </div>
+
+  <div *ngIf="previewImage" class="mt-4">
+    <h3 class="text-lg font-semibold">Vista previa:</h3>
+    <img [src]="previewImage" alt="Vista previa" class="w-full max-w-md rounded shadow-md" />
+  </div>
+
+  <input [(ngModel)]="makerName" type="text" placeholder="Nombre de Maker"
+         class="border p-2 mt-4 w-full rounded"
+         [disabled]="makers.length >= 10" />
+
+  <input [(ngModel)]="description" type="text" placeholder="Descripción"
+         class="border p-2 mt-2 w-full rounded"
+         [disabled]="makers.length >= 10" />
+
+  <button (click)="uploadMaker()"
+          class="bg-green-500 text-white px-4 py-2 rounded mt-2 w-full"
+          [disabled]="!selectedFile || makers.length >= 10">
+    Agregar
+  </button>
+</div>
