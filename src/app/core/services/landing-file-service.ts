@@ -20,8 +20,8 @@ export class LandingFileService {
     return this.http.post<LandingFile>(`${this.baseUrl}/register`, formData);
   }
 
-  getFileById(id: number): Observable<Blob> {
-    return this.http.get(`${this.baseUrl}/${id}`, { responseType: 'blob' });
+  getFileById(id: number): Observable<string> {
+    return this.http.get(`${this.baseUrl}/${id}`, { responseType: 'text' });
   }
 
   getAllFiles(): Observable<LandingFile[]> {
@@ -32,6 +32,10 @@ export class LandingFileService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.put<LandingFile>(`${this.baseUrl}/${id}`, formData);
+  }
+
+  downloadFileById(id: number): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/${id}/download`, { responseType: 'blob' });
   }
 
   disableFile(id: number): Observable<void> {

@@ -7,8 +7,9 @@ import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-file-upload',
-  templateUrl: './file-upload.component.html',
+  standalone: true,
   imports: [NgClass, NgForOf, NgIf, SlicePipe],
+  templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.css']
 })
 export class FileUploadComponent implements OnInit {
@@ -43,24 +44,54 @@ export class FileUploadComponent implements OnInit {
       // Para la sección de NEWS
       this.uploadedNewsFiles = files
         .filter(file => file.fileSector === 'NEWS')
-        .map(file => ({
-          ...file,
-          displayName: file.fileName.includes('_')
-            ? file.fileName.split('_').slice(1).join('_')
-            : file.fileName
-        }));
+        .map(file => {
+          // Partimos del fileName, que puede ser una URL firmada
+          let key = file.fileName;
+          if (key.startsWith('http')) {
+            try {
+              const url = new URL(key);
+              key = url.pathname; // Ejemplo: "/1740758337052_CV%20Zahir%20Aredo.pdf"
+              if (key.startsWith('/')) {
+                key = key.substring(1); // Quita la barra inicial
+              }
+            } catch (e) {
+              // Si falla el parseo, se usa el valor original
+            }
+          }
+          // Removemos el prefijo de timestamp: dividimos por "_" y usamos la parte posterior
+          let displayName = key.includes('_') ? key.split('_').slice(1).join('_') : key;
+          // Decodificamos para convertir "%20" en espacios, etc.
+          displayName = decodeURIComponent(displayName);
+          return {
+            ...file,
+            displayName: displayName
+          };
+        });
 
-      // Para la sección de MAGAZINE
+      // Para la sección de MAGAZINE (mismo proceso)
       this.uploadedMagazinesFiles = files
         .filter(file => file.fileSector === 'MAGAZINE')
-        .map(file => ({
-          ...file,
-          displayName: file.fileName.includes('_')
-            ? file.fileName.split('_').slice(1).join('_')
-            : file.fileName
-        }));
+        .map(file => {
+          let key = file.fileName;
+          if (key.startsWith('http')) {
+            try {
+              const url = new URL(key);
+              key = url.pathname;
+              if (key.startsWith('/')) {
+                key = key.substring(1);
+              }
+            } catch (e) {}
+          }
+          let displayName = key.includes('_') ? key.split('_').slice(1).join('_') : key;
+          displayName = decodeURIComponent(displayName);
+          return {
+            ...file,
+            displayName: displayName
+          };
+        });
     });
   }
+
 
   openAllFilesModal(sector: 'news' | 'magazine'): void {
     this.currentSector = sector;
@@ -91,20 +122,15 @@ export class FileUploadComponent implements OnInit {
     }
 
     if (this.selectedFiles.length === 1) {
-      // Descarga individual
+      // Para descarga individual, se puede seguir usando window.open o bien usar el endpoint de descarga
       this.downloadFile(this.selectedFiles[0]);
       this.closeAllFilesModal();
     } else {
-      // Descarga múltiple: genera un ZIP
+      // Descarga múltiple: generar un ZIP con los blobs reales de los PDFs
       const zip = new JSZip();
       const fileRequests = this.selectedFiles.map(file => {
-        const fileId = file.idLandingFiles || (file as any).id;
-        if (!fileId) {
-          console.error('No se encontró el ID del archivo:', file);
-          return Promise.resolve();
-        }
         return new Promise<void>((resolve, reject) => {
-          this.landingFileService.getFileById(fileId).subscribe({
+          this.landingFileService.downloadFileById(file.idLandingFiles).subscribe({
             next: (blob) => {
               zip.file(file.displayName || file.fileName, blob);
               resolve();
@@ -120,7 +146,7 @@ export class FileUploadComponent implements OnInit {
       Promise.all(fileRequests)
         .then(() => {
           zip.generateAsync({ type: 'blob' })
-            .then((content: string | Blob) => {
+            .then((content: Blob) => {
               saveAs(content, 'archivos_comprimidos.zip');
               this.closeAllFilesModal();
             });
@@ -130,6 +156,8 @@ export class FileUploadComponent implements OnInit {
         });
     }
   }
+
+
 
   onFileSelected(event: any, type: 'news' | 'magazine'): void {
     const file = event.target.files[0];
@@ -218,25 +246,15 @@ export class FileUploadComponent implements OnInit {
   }
 
   downloadFile(file: LandingFile): void {
-    const fileId = file.idLandingFiles || (file as any).id;
-    if (!fileId) {
-      console.error('No se encontró el ID del archivo:', file);
-      alert('Error: no se encontró el ID del archivo.');
-      return;
-    }
-    this.landingFileService.getFileById(fileId).subscribe({
+    this.landingFileService.downloadFileById(file.idLandingFiles).subscribe({
       next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = file.displayName || file.fileName;
-        a.click();
-        window.URL.revokeObjectURL(url);
+        // Fuerza la descarga usando saveAs
+        saveAs(blob, file.displayName || 'archivo.pdf');
       },
       error: (err) => {
-        console.error('Error descargando archivo:', err);
         alert('Error al descargar el archivo.');
       }
     });
   }
+
 }
