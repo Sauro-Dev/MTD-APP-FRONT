@@ -3,6 +3,7 @@ import { ListUser } from '../../core/interfaces/users';
 import { UsersService } from '../../core/services/users.service';
 import { FormsModule } from '@angular/forms';
 import { NgClass, NgForOf } from '@angular/common';
+import { RouterModule } from '@angular/router'; // <-- IMPORTAR RouterModule
 import { ListArea } from "../../core/interfaces/ListArea";
 import { AreasService } from "../../core/services/areas.service";
 
@@ -11,7 +12,8 @@ import { AreasService } from "../../core/services/areas.service";
   imports: [
     FormsModule,
     NgForOf,
-    NgClass
+    NgClass,
+    RouterModule
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.css'

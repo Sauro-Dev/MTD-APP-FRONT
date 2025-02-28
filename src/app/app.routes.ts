@@ -3,6 +3,8 @@ import { UsersGuard } from './core/guards/users.guard';
 import {AdminGuard} from './core/guards/admin.guard';
 import {AuthGuard} from './core/guards/auth.guard';
 import {UsersComponent} from './features/users/users.component';
+import { FormComponent } from './features/form/form.component'; // Importamos el FormComponent
+
 
 export const appRoutes: Routes = [
   { path: '', redirectTo: 'admin-panel', pathMatch: 'full' },
@@ -27,6 +29,15 @@ export const appRoutes: Routes = [
     component: UsersComponent,
     canActivate: [UsersGuard],
   },
+
+  {
+    path: 'form', //  Agregamos la nueva ruta
+    loadComponent: () =>
+      import('./features/form/form.component').then(
+        (m) => m.FormComponent
+      ),
+  },
+
   {
     path: 'no-auth',
     loadComponent: () =>

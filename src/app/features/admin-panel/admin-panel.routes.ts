@@ -6,6 +6,9 @@ import { FileUploadComponent } from './components/file-upload/file-upload.compon
 import { LibraryComponent } from './components/library/library.component';
 import { SpotifyControlComponent } from './components/spotify-control/spotify-control.component';
 import {BannerComponent} from './components/banner/banner.component';
+import { UsersComponent } from '../users/users.component'; //  Importamos UsersComponent
+import { FormComponent } from '../form/form.component'; //  Importamos FormComponent
+
 
 export const ADMIN_PANEL_ROUTES: Routes = [
   {
@@ -37,6 +40,16 @@ export const ADMIN_PANEL_ROUTES: Routes = [
         path: 'spotify-control',
         component: SpotifyControlComponent
       },
+
+      {
+        path: 'users', // Agregamos la ruta de usuarios
+        component: UsersComponent
+      },
+      {
+        path: 'form', //  Agregamos la ruta para el formulario
+        component: FormComponent
+      },
+
       {
         path: '**',
         redirectTo: 'about-us-control'
