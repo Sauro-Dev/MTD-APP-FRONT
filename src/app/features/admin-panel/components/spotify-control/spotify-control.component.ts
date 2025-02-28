@@ -51,17 +51,26 @@ export class SpotifyControlComponent implements OnInit, AfterViewInit {
 
   loadAll(): void {
     this.spotifyService.getAll().subscribe({
-      next: (arr) => {
-        this.playlists = arr;
-        if (!arr.length) {
-          this.message = 'No se encontraron playlists habilitadas';
-        } else {
-          this.message = null;
+      next: (res: any) => {
+        // 1) Si res es un array, hay (o no) playlists
+        if (Array.isArray(res)) {
+          this.playlists = res;
+          // Si está vacío, mostramos mensaje
+          if (!res.length) {
+            this.message = 'No se encontraron playlists habilitadas';
+          } else {
+            this.message = null;
+          }
+        }
+        // 2) Si res es un objeto con "message"
+        else if (res && res.message) {
+          this.playlists = [];
+          this.message = res.message;
         }
       },
       error: (err) => {
         console.error('Error al obtener playlists:', err);
-        this.message = 'No se encontraron playlists habilitadas';
+        this.message = 'Ocurrió un error al obtener playlists';
       }
     });
   }
