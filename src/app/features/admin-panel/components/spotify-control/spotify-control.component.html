@@ -1,1 +1,103 @@
-<p>spotify-control works!</p>
+<div class="p-4">
+  <h2 class="text-2xl font-bold mb-4">Playlists actuales</h2>
+
+  <!-- Mensaje si no hay playlists o hay error -->
+  <div *ngIf="message" class="mb-4 text-gray-500">
+    {{ message }}
+  </div>
+
+  <!-- Grid de playlists (solo si hay playlists) -->
+  <div *ngIf="!message" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div
+      *ngFor="let pl of playlists"
+      class="border rounded p-3 flex flex-col items-center shadow"
+    >
+      <iframe
+        class="rounded-md"
+        style="border-radius:12px"
+        [src]="safeEmbed(pl.embedUrl)"
+        width="100%"
+        height="152"
+        frameborder="0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"
+      ></iframe>
+
+      <p class="mt-2 font-semibold text-center">{{ pl.title }}</p>
+
+      <div class="flex gap-2 mt-3">
+        <button
+          class="bg-secondary text-black px-2 py-1 rounded hover:bg-pink-600"
+          (click)="edit(pl)"
+        >
+          Editar
+        </button>
+        <button
+          class="bg-primary text-white px-2 py-1 rounded hover:bg-pink-600"
+          (click)="pl.enabled ? disable(pl) : enable(pl)"
+        >
+          {{ pl.enabled ? 'Deshabilitar' : 'Habilitar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form para agregar playlist -->
+  <div class="border rounded p-4 w-full max-w-md">
+    <h3 class="text-lg font-bold mb-2">Agregar playlist</h3>
+
+    <label class="block text-sm mb-1" for="playlistTitleInput">Título</label>
+    <input
+      id="playlistTitleInput"
+      type="text"
+      [(ngModel)]="newTitle"
+      class="border px-2 py-1 w-full mb-2"
+      placeholder="Rock Playlist..."
+    />
+
+    <label class="block text-sm mb-1" for="playlistEmbedUrlInput">
+      URL Embebida (ej: https://open.spotify.com/embed/playlist/...)
+    </label>
+    <input
+      id="playlistEmbedUrlInput"
+      type="text"
+      [(ngModel)]="newEmbedUrl"
+      class="border px-2 py-1 w-full mb-2"
+      placeholder="https://open.spotify.com/embed/playlist/..."
+    />
+
+    <label class="block text-sm mb-1" for="playlistDirectUrlInput">
+      URL Directa (ej: https://open.spotify.com/playlist/...)
+    </label>
+    <input
+      id="playlistDirectUrlInput"
+      type="text"
+      [(ngModel)]="newDirectUrl"
+      class="border px-2 py-1 w-full mb-2"
+      placeholder="https://open.spotify.com/playlist/..."
+    />
+
+    <button
+      class="bg-secondary text-black px-3 py-2 rounded hover:bg-pink-600"
+      (click)="addPlaylist()"
+    >
+      Agregar
+    </button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div
+  *ngIf="showModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+>
+  <div class="bg-white p-6 rounded shadow">
+    <p class="mb-4">{{ modalMessage }}</p>
+    <button
+      class="bg-primary text-white px-4 py-2 rounded"
+      (click)="closeModal()"
+    >
+      Cerrar
+    </button>
+  </div>
+</div>
