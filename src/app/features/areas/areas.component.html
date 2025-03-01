@@ -14,13 +14,26 @@
       </h2>
 
       <div class="mt-4">
+        <!-- Recorremos las áreas -->
         <div *ngFor="let area of areas()"
-             class="p-4 rounded flex items-center justify-between mt-2"
-             [ngStyle]="{ 'background-color': area.color || '#f3f3f3' }">
-          <span class="text-lg font-semibold text-white">{{ area.name }}</span>
+             class="flex items-center justify-between mt-2">
+          <!-- Bloque de la izquierda: círculo + nombre -->
+          <div class="flex items-center gap-2">
+            <!-- Círculo con el color del área -->
+            <div
+              [ngStyle]="{ 'background-color': area.color }"
+              class="h-4 w-4 border-2 border-black rounded-full"
+            ></div>
+            <!-- Nombre del área -->
+            <span class="text-lg font-medium text-black">
+          {{ area.name }}
+        </span>
+          </div>
+
+          <!-- Bloque de la derecha: iconos -->
           <div class="flex gap-4">
-            <i class="fa-solid fa-pen-to-square cursor-pointer text-white"></i>
-            <i class="fa-solid fa-user-plus cursor-pointer text-white"></i>
+            <i class="fa-solid fa-pen-to-square cursor-pointer text-black"></i>
+            <i class="fa-solid fa-user-plus cursor-pointer text-black"></i>
           </div>
         </div>
       </div>
