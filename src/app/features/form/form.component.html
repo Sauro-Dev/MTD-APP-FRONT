@@ -1,58 +1,104 @@
 <div class="p-6">
+
+
   <!-- Breadcrumb -->
   <div class="text-sm text-gray-500 mb-4">
     <span class="font-semibold text-gray-700">Usuarios</span> > Formularios
   </div>
 
+  <!-- Botón "Volver a Usuarios" -->
+  <button
+    class="px-6 py-2 bg-gray-500 text-white rounded-md font-semibold hover:bg-gray-600 mb-4"
+    [routerLink]="['/users']"
+  >
+    Atras
+  </button>
+
   <h1 class="text-2xl font-bold">Formularios</h1>
 
-  <!-- Botón "Atrás" -->
-  <div class="mt-4">
-    <button
-      class="px-6 py-2 bg-teal-500 text-white rounded-md font-semibold hover:bg-teal-600"
-      routerLink="/users">
-      Atrás
-    </button>
-  </div>
-
   <!-- Controles de búsqueda y filtros -->
-  <div class="flex flex-wrap justify-between items-center bg-gray-100 p-4 rounded-md shadow-md mt-6">
-    <!-- Input de búsqueda con ícono -->
-    <div class="relative w-full max-w-md">
-      <input
-        type="text"
-        class="pl-10 pr-4 py-2 border rounded-md w-full bg-yellow-200"
-        placeholder="Buscar..."
-      />
-      <i class="fa-solid fa-search absolute left-3 top-3 text-gray-600"></i>
-    </div>
+  <div class="bg-gray-100 p-4 rounded-md shadow-md mt-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <!-- Input de búsqueda -->
+      <div class="relative w-full max-w-md">
+        <input
+          type="text"
+          class="pl-10 pr-4 py-2 border rounded-md w-full bg-yellow-200"
+          placeholder="Buscar..."
+          [(ngModel)]="searchTerm"
+          (input)="filterForms()"
+        />
+        <i class="fa-solid fa-search absolute left-3 top-3 text-gray-600"></i>
+      </div>
 
-    <!-- Contenedor de filtros alineado a la derecha -->
-    <div class="flex gap-2">
-      <select class="px-4 py-2 border rounded-md">
-        <option value="">Área</option>
-      </select>
+      <!-- Filtro por Área y cantidad de formularios -->
+      <div class="flex gap-2">
+        <select
+          class="px-4 py-2 border rounded-md"
+          [(ngModel)]="selectedArea"
+          (change)="filterForms()"
+        >
+          <option value="">Área</option>
+          <option *ngFor="let area of areas()" [value]="area.id">
+            {{ area.name }}
+          </option>
+        </select>
 
-      <select class="px-4 py-2 border rounded-md">
-        <option value="">Rol</option>
-      </select>
-
-      <select class="px-4 py-2 border rounded-md">
-        <option value="">10 Form</option>
-      </select>
+        <select
+          class="px-4 py-2 border rounded-md"
+          [(ngModel)]="formsPerPage"
+          (change)="filterForms()"
+        >
+          <option value="10">10 Form</option>
+          <option value="20">20 Form</option>
+          <option value="50">50 Form</option>
+        </select>
+      </div>
     </div>
   </div>
 
-  <!-- Aquí más adelante irá la tabla de formularios -->
+  <!-- Tabla de Formularios -->
+  <div class="bg-white p-4 rounded-md shadow-md mt-6">
+    <table class="w-full border-collapse border border-gray-300">
+      <thead>
+      <tr class="bg-gray-100">
+        <th class="px-4 py-2 text-center border border-gray-300 w-20">Form ID</th>
+        <th class="px-4 py-2 text-center border border-gray-300 w-40">Nombres</th>
+        <th class="px-4 py-2 text-center border border-gray-300 w-52">Apellidos</th>
+        <th class="px-4 py-2 text-center border border-gray-300 w-32">Área</th>
+        <th class="px-4 py-2 text-center border border-gray-300 w-28">Fecha</th>
+        <th class="px-4 py-2 text-center border border-gray-300 w-20">Acción</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let volunteer of getPaginatedVolunteers()" class="hover:bg-gray-50">
+        <td class="px-4 py-2 border border-gray-300 text-center">#{{ volunteer.userId }}</td>
+        <td class="px-4 py-2 border border-gray-300 text-left">{{ volunteer.name }}</td>
+        <td class="px-4 py-2 border border-gray-300 text-left">
+          {{ volunteer.paternalSurname }} {{ volunteer.maternalSurname }}
+        </td>
+        <td class="px-4 py-2 border border-gray-300 text-left">
+          {{ volunteer.areaId }}
+        </td>
+        <td class="px-4 py-2 border border-gray-300 text-center">
+          {{ volunteer.birthdate | date:'dd/MM/yyyy' }}
+        </td>
+        <td class="px-4 py-2 border border-gray-300 text-center flex justify-center gap-2">
+          <!-- Botón para ver detalles del formulario -->
+          <button class="text-pink-500 hover:text-pink-700" [routerLink]="['/form', volunteer.userId]">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="text-red-500 hover:text-red-700">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
 
-  <!-- Paginación -->
-  <div class="flex justify-center mt-6 gap-4">
-    <button class="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700">
-      <i class="fa-solid fa-angle-left"></i>
-    </button>
-    <span class="px-4 py-2 bg-gray-200 rounded-md">Página 1</span>
-    <button class="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700">
-      <i class="fa-solid fa-angle-right"></i>
-    </button>
+    <!-- Mensaje si no hay formularios -->
+    <p *ngIf="filteredVolunteers().length === 0" class="text-center text-gray-500 mt-4">
+      No hay formularios registrados.
+    </p>
   </div>
 </div>

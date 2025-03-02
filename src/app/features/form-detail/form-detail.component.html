@@ -1,0 +1,71 @@
+<div class="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-md">
+  <!-- Botón Volver -->
+  <button class="px-4 py-2 bg-gray-400 text-white rounded-md mb-4" (click)="goBack()">Volver</button>
+
+  <h1 class="text-xl font-bold text-center mb-4">Formulario de Voluntariado</h1>
+
+  <div *ngIf="volunteer()" class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="font-semibold">Nombres:</label>
+      <input class="border p-2 rounded-md w-full" [value]="volunteer()?.name" readonly>
+    </div>
+    <div>
+      <label class="font-semibold">Apellidos:</label>
+      <input class="border p-2 rounded-md w-full"
+             [value]="volunteer()?.paternalSurname + ' ' + volunteer()?.maternalSurname" readonly>
+    </div>
+    <div>
+      <label class="font-semibold">Correo:</label>
+      <input class="border p-2 rounded-md w-full" [value]="volunteer()?.email" readonly>
+    </div>
+    <div>
+      <label class="font-semibold">DNI:</label>
+      <input class="border p-2 rounded-md w-full" [value]="volunteer()?.dni" readonly>
+    </div>
+    <div>
+      <label class="font-semibold">Celular:</label>
+      <input class="border p-2 rounded-md w-full" [value]="volunteer()?.phoneNumber" readonly>
+    </div>
+    <div>
+      <label class="font-semibold">Código de País:</label>
+      <input class="border p-2 rounded-md w-full" [value]="volunteer()?.codeNumber" readonly>
+    </div>
+    <div>
+      <label class="font-semibold">País:</label>
+      <input class="border p-2 rounded-md w-full"
+             [value]="volunteer()?.country || 'No especificado'" readonly>
+    </div>
+    <div>
+      <label class="font-semibold">Región:</label>
+      <input class="border p-2 rounded-md w-full"
+             [value]="volunteer()?.region || 'No especificado'" readonly>
+    </div>
+    <div>
+      <label class="font-semibold">Horas Estimadas:</label>
+      <input class="border p-2 rounded-md w-full" [value]="volunteer()?.estimatedHours" readonly>
+    </div>
+    <div>
+      <label class="font-semibold">Área de Voluntariado:</label>
+      <input class="border p-2 rounded-md w-full"
+             [value]="volunteer()?.areaId || 'Sin área'" readonly>
+    </div>
+    <div class="col-span-2">
+      <label class="font-semibold">Motivación:</label>
+      <textarea class="border p-2 rounded-md w-full" readonly>
+        {{ volunteer()?.motivation }}
+      </textarea>
+    </div>
+  </div>
+
+  <!-- Botones de Acción -->
+  <div class="flex justify-center gap-4 mt-6">
+    <button class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-700"
+            (click)="verifyVolunteer()">
+      Verificar
+    </button>
+    <button class="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-700"
+            (click)="goBack()">
+      Cancelar
+    </button>
+  </div>
+</div>

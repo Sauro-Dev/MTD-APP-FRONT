@@ -1,10 +1,8 @@
 import { Routes } from '@angular/router';
 import { UsersGuard } from './core/guards/users.guard';
-import {AdminGuard} from './core/guards/admin.guard';
-import {AuthGuard} from './core/guards/auth.guard';
-import {UsersComponent} from './features/users/users.component';
-import { FormComponent } from './features/form/form.component'; // Importamos el FormComponent
-
+import { AdminGuard } from './core/guards/admin.guard';
+import { AuthGuard } from './core/guards/auth.guard';
+import { UsersComponent } from './features/users/users.component';
 
 export const appRoutes: Routes = [
   { path: '', redirectTo: 'admin-panel', pathMatch: 'full' },
@@ -29,15 +27,21 @@ export const appRoutes: Routes = [
     component: UsersComponent,
     canActivate: [UsersGuard],
   },
-
   {
-    path: 'form', //  Agregamos la nueva ruta
+    path: 'form',
     loadComponent: () =>
       import('./features/form/form.component').then(
         (m) => m.FormComponent
       ),
   },
-
+  {
+    path: 'form/:id', // Nueva ruta para ver detalles de un formulario específico
+    loadComponent: () =>
+      import('./features/form-detail/form-detail.component').then(
+        (m) => m.FormDetailComponent
+      ),
+    canActivate: [AdminGuard], // Solo los administradores pueden ver los detalles del formulario
+  },
   {
     path: 'no-auth',
     loadComponent: () =>
