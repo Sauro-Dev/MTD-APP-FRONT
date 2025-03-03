@@ -45,6 +45,10 @@ export class AuthService {
     window.location.href = 'http://localhost:5173/home?logout=true';
   }
 
+  isAuthenticated(): boolean {
+    return !!this.getToken();
+  }
+
   private async handleStorageChange(event: StorageEvent): Promise<void> {
     if (event.key === this.tokenKey && event.newValue === null) {
       try {

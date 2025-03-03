@@ -1,4 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { VolunteerService } from '../../core/services/volunteer.service';
 import { VolunteerPending } from '../../core/interfaces/volunteer';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +7,7 @@ import { NgForOf, CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ListArea } from '../../core/interfaces/ListArea';
 import { AreasService } from '../../core/services/areas.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-form',
@@ -24,21 +26,40 @@ export class FormComponent implements OnInit {
   filteredVolunteers = signal<VolunteerPending[]>([]);
   areas = signal<ListArea[]>([]);
   searchTerm = signal<string>('');
-  selectedArea = signal<number | null>(null);
+  selectedArea = signal<string>('');
   currentPage = signal<number>(1);
   formsPerPage = signal<number>(10);
+  loading = signal<boolean>(false);
+  error = signal<string | null>(null);
+  noData = signal<boolean>(false);
 
   /** Hace que Math esté disponible en el HTML (para la paginación) */
   protected readonly Math = Math;
 
   constructor(
+    private route: ActivatedRoute,
     private volunteerService: VolunteerService,
-    private areasService: AreasService
+    private areasService: AreasService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
     this.loadAreas();
     this.loadVolunteers();
+
+    // Verificar si venimos de una actualización (aprobación/rechazo)
+    this.route.queryParams.subscribe(params => {
+      if (params['updated'] === 'true') {
+        const action = params['action'];
+        const userId = params['userId'];
+
+        if (action === 'approved') {
+          this.notificationService.showSuccess(`Voluntario #${userId} aprobado correctamente`);
+        } else if (action === 'rejected') {
+          this.notificationService.showInfo(`Solicitud de voluntario #${userId} rechazada`);
+        }
+      }
+    });
   }
 
   /**
@@ -49,7 +70,11 @@ export class FormComponent implements OnInit {
       next: (data) => {
         this.areas.set(data);
       },
-      error: (err) => console.error('Error al obtener áreas', err),
+      error: (err) => {
+        console.error('Error al obtener áreas', err);
+        this.error.set('Error al cargar las áreas. Por favor, intente más tarde.');
+        this.notificationService.showError('Error al cargar las áreas');
+      },
     });
   }
 
@@ -58,25 +83,40 @@ export class FormComponent implements OnInit {
    * y los mapea para mostrar datos más legibles (área, horas, etc.).
    */
   loadVolunteers(): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.noData.set(false);
+
     this.volunteerService.getPendingVolunteers().subscribe({
       next: (data) => {
-        // Mapeo para mostrar datos más legibles (pais, region, area, horas)
+
+        if (data.length === 0) {
+          this.noData.set(true);
+          this.volunteers.set([]);
+          this.filteredVolunteers.set([]);
+          this.loading.set(false);
+          return;
+        }
+
+        // Mapeo para mostrar datos más legibles
         const volunteersMapped = data.map(volunteer => ({
           ...volunteer,
-          // Si country/region no viene, poner "No especificado"
-          country: volunteer.country || 'No especificado',
-          region: volunteer.region || 'No especificado',
-          // Convertimos areaId a nombre de área en este paso para la tabla
-          areaId: this.getAreaName(volunteer.areaId),
+          // Si el área tiene nombre, usarlo; de lo contrario, buscar por ID
+          areaName: volunteer.areaName || this.getAreaName(String(volunteer.areaId || '')),
           // Convertimos estimatedHours a un formato legible
           estimatedHours: this.formatEstimatedHours(volunteer.estimatedHours)
         }));
+
         this.volunteers.set(volunteersMapped);
         this.filterForms();
+        this.loading.set(false);
       },
       error: (err) => {
         console.error('Error al cargar formularios', err);
-        alert('Error al cargar formularios. Por favor, intenta más tarde.');
+        const errorMsg = 'Error al cargar formularios: ' + (err.message || 'Error desconocido');
+        this.error.set(errorMsg);
+        this.notificationService.showError(errorMsg);
+        this.loading.set(false);
       },
     });
   }
@@ -93,24 +133,30 @@ export class FormComponent implements OnInit {
       result = result.filter(volunteer =>
         `${volunteer.name} ${volunteer.paternalSurname} ${volunteer.maternalSurname}`
           .toLowerCase()
-          .includes(searchLower)
+          .includes(searchLower) ||
+        volunteer.dni?.toLowerCase().includes(searchLower) ||
+        volunteer.email?.toLowerCase().includes(searchLower)
       );
     }
 
     // Filtro por área
-    if (this.selectedArea() !== null) {
-      // Nota: volunteer.areaId aquí ya es un string con el nombre del área,
-      // porque lo convertimos en loadVolunteers().
-      // Si quisiéramos filtrar por ID, necesitaríamos la info original.
-      // (O cambiar la lógica para mantener un 'areaIdOriginal' aparte).
-      const selectedAreaName = this.getAreaName(String(this.selectedArea()));
+    if (this.selectedArea() && this.selectedArea() !== '') {
+      // Buscar por areaId o por areaName
       result = result.filter(volunteer =>
-        volunteer.areaId === selectedAreaName
+        String(volunteer.areaId) === this.selectedArea() ||
+        volunteer.areaName === this.getAreaName(this.selectedArea())
       );
     }
 
     this.filteredVolunteers.set(result);
     this.currentPage.set(1);
+
+    // Si después de filtrar no hay resultados, mostrar mensaje
+    if (result.length === 0 && this.volunteers().length > 0) {
+      this.noData.set(true);
+    } else {
+      this.noData.set(false);
+    }
   }
 
   /**
@@ -126,9 +172,19 @@ export class FormComponent implements OnInit {
    * busca el nombre real en la lista de áreas.
    */
   getAreaName(areaId: string): string {
-    if (!areaId) return 'Sin área';
-    const areaFound = this.areas().find(a => String(a.id) === areaId);
-    return areaFound ? areaFound.name : 'Sin área';
+    if (!areaId || areaId === '') return 'Sin área';
+
+    // Convertir a número para comparación directa
+    const areaIdNum = Number(areaId);
+
+    // Buscar por coincidencia exacta de ID
+    for (const area of this.areas()) {
+      if (Number(area.id) === areaIdNum) {
+        return area.name;
+      }
+    }
+
+    return 'Sin área';
   }
 
   /**
@@ -147,7 +203,7 @@ export class FormComponent implements OnInit {
       'NINE': '9 horas',
       'TEN_PLUS': '+10 horas'
     };
-    return estimatedHoursMap[estimatedHours] || estimatedHours;
+    return estimatedHoursMap[estimatedHours] || estimatedHours || 'No especificado';
   }
 
   /**
@@ -156,7 +212,7 @@ export class FormComponent implements OnInit {
   nextPage(): void {
     const totalPages = Math.ceil(this.filteredVolunteers().length / this.formsPerPage());
     if (this.currentPage() < totalPages) {
-      this.currentPage.update(current => current + 1);
+      this.currentPage.update(page => page + 1);
     }
   }
 
@@ -165,7 +221,31 @@ export class FormComponent implements OnInit {
    */
   prevPage(): void {
     if (this.currentPage() > 1) {
-      this.currentPage.update(current => current - 1);
+      this.currentPage.update(page => page - 1);
     }
+  }
+
+  /**
+   * Retorna el número total de páginas
+   */
+  getTotalPages(): number {
+    return Math.ceil(this.filteredVolunteers().length / this.formsPerPage());
+  }
+
+  /**
+   * Reintenta cargar los voluntarios
+   */
+  retryLoading(): void {
+    this.loadVolunteers();
+  }
+
+  /**
+   * Limpia los filtros
+   */
+  clearFilters(): void {
+    this.searchTerm.set('');
+    this.selectedArea.set('');
+    this.filterForms();
+    this.notificationService.showInfo('Filtros limpiados');
   }
 }

@@ -1,10 +1,11 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError, of } from 'rxjs';
 import { environment } from '../environment';
 import { ListArea } from '../interfaces/ListArea';
 import { isPlatformBrowser } from '@angular/common';
 import { catchError } from 'rxjs/operators';
+import { AuthService } from './auth.service';
 
 export interface RegisterArea {
   name: string;
@@ -17,36 +18,46 @@ export interface RegisterArea {
 export class AreasService {
   private apiUrl = `${environment.apiUrl}/areas`;
 
+  // Datos de fallback para SSR o fallos API
+  private defaultAreas: ListArea[] = [
+    { id: 1, name: 'Webaso', color: '#FF0000' },
+    { id: 2, name: 'Marketing', color: '#00FF00' },
+    { id: 3, name: 'Diseño', color: '#0000FF' }
+  ];
+
   constructor(
     private http: HttpClient,
-    @Inject(PLATFORM_ID) private platformId: object
+    @Inject(PLATFORM_ID) private platformId: object,
+    private authService: AuthService
   ) {}
 
+  /**
+   * Obtiene headers con autorización
+   */
   private getAuthHeaders(): HttpHeaders {
-    if (!isPlatformBrowser(this.platformId)) {
-      console.warn('Intento de acceder a localStorage en un entorno no compatible.');
-      return new HttpHeaders();
-    }
-    const token = localStorage.getItem('token');
+    const token = this.authService.getToken();
     if (!token) {
-      console.error('No autenticado: token no encontrado.');
       return new HttpHeaders();
     }
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  /** Obtener todas las áreas */
+  /**
+   * Obtener todas las áreas con soporte SSR
+   */
   getAllAreas(): Observable<ListArea[]> {
+    // En SSR devolvemos áreas por defecto
     if (!isPlatformBrowser(this.platformId)) {
-      return throwError(() => new Error('No se puede acceder a localStorage en este entorno.'));
+      return of(this.defaultAreas);
     }
 
     return this.http.get<ListArea[]>(`${this.apiUrl}/all`, {
       headers: this.getAuthHeaders()
     }).pipe(
-      catchError(error => {
+      catchError((error: HttpErrorResponse) => {
         console.error('Error al obtener áreas', error);
-        return throwError(() => new Error('Error al obtener áreas'));
+        // Devolver áreas por defecto en caso de error
+        return of(this.defaultAreas);
       })
     );
   }
@@ -54,54 +65,19 @@ export class AreasService {
   /** Registrar una nueva área */
   registerArea(area: RegisterArea): Observable<any> {
     if (!isPlatformBrowser(this.platformId)) {
-      return throwError(() => new Error('No se puede acceder a localStorage en este entorno.'));
+      return of({ success: false, message: 'No se puede registrar área en SSR' });
     }
+
+    if (!this.authService.isAuthenticated()) {
+      return of({ success: false, message: 'No autenticado' });
+    }
+
     return this.http.post(`${this.apiUrl}/register`, area, {
       headers: this.getAuthHeaders()
     }).pipe(
       catchError(error => {
         console.error('Error al registrar área', error);
         return throwError(() => new Error('Error al registrar área'));
-      })
-    );
-  }
-
-  /** Editar un área existente */
-  updateArea(id: number, area: RegisterArea): Observable<any> {
-    if (!isPlatformBrowser(this.platformId)) {
-      return throwError(() => new Error('No se puede acceder a localStorage en este entorno.'));
-    }
-    return this.http.put(`${this.apiUrl}/update/${id}`, area, {
-      headers: this.getAuthHeaders()
-    }).pipe(
-      catchError(error => {
-        console.error('Error al actualizar área', error);
-        return throwError(() => new Error('Error al actualizar área'));
-      })
-    );
-  }
-
-  /** Eliminar un área */
-  deleteArea(id: number): Observable<any> {
-    if (!isPlatformBrowser(this.platformId)) {
-      return throwError(() => new Error('No se puede acceder a localStorage en este entorno.'));
-    }
-    return this.http.delete(`${this.apiUrl}/delete/${id}`, {
-      headers: this.getAuthHeaders()
-    }).pipe(
-      catchError(error => {
-        console.error('Error al eliminar área', error);
-        return throwError(() => new Error('Error al eliminar área'));
-      })
-    );
-  }
-
-  /** Método para obtener las áreas públicas */
-  getPublicAreas(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/public/all`).pipe(
-      catchError(error => {
-        console.error('Error al obtener áreas públicas', error);
-        return throwError(() => new Error('Error al obtener áreas públicas'));
       })
     );
   }

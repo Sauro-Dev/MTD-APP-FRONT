@@ -1,6 +1,4 @@
 <div class="p-6">
-
-
   <!-- Breadcrumb -->
   <div class="text-sm text-gray-500 mb-4">
     <span class="font-semibold text-gray-700">Usuarios</span> > Formularios
@@ -14,19 +12,34 @@
     Atras
   </button>
 
-  <h1 class="text-2xl font-bold">Formularios</h1>
+  <h1 class="text-2xl font-bold">Formularios de Voluntarios Pendientes</h1>
+
+  <!-- Estado de carga y error -->
+  <div *ngIf="loading()" class="mt-4 text-center py-4">
+    <p class="text-blue-600">Cargando formularios...</p>
+  </div>
+
+  <div *ngIf="error()" class="mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+    <p>{{ error() }}</p>
+    <button
+      (click)="retryLoading()"
+      class="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+    >
+      Reintentar
+    </button>
+  </div>
 
   <!-- Controles de búsqueda y filtros -->
-  <div class="bg-gray-100 p-4 rounded-md shadow-md mt-6">
+  <div *ngIf="!loading() && !error()" class="bg-gray-100 p-4 rounded-md shadow-md mt-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
       <!-- Input de búsqueda -->
       <div class="relative w-full max-w-md">
         <input
           type="text"
-          class="pl-10 pr-4 py-2 border rounded-md w-full bg-yellow-200"
-          placeholder="Buscar..."
-          [(ngModel)]="searchTerm"
-          (input)="filterForms()"
+          class="pl-10 pr-4 py-2 border rounded-md w-full"
+          placeholder="Buscar por nombre, apellido, email o DNI..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event); filterForms()"
         />
         <i class="fa-solid fa-search absolute left-3 top-3 text-gray-600"></i>
       </div>
@@ -35,10 +48,10 @@
       <div class="flex gap-2">
         <select
           class="px-4 py-2 border rounded-md"
-          [(ngModel)]="selectedArea"
-          (change)="filterForms()"
+          [ngModel]="selectedArea()"
+          (ngModelChange)="selectedArea.set($event); filterForms()"
         >
-          <option value="">Área</option>
+          <option value="">Todas las áreas</option>
           <option *ngFor="let area of areas()" [value]="area.id">
             {{ area.name }}
           </option>
@@ -46,19 +59,27 @@
 
         <select
           class="px-4 py-2 border rounded-md"
-          [(ngModel)]="formsPerPage"
-          (change)="filterForms()"
+          [ngModel]="formsPerPage()"
+          (ngModelChange)="formsPerPage.set($event); filterForms()"
         >
-          <option value="10">10 Form</option>
-          <option value="20">20 Form</option>
-          <option value="50">50 Form</option>
+          <option [value]="10">10 Form</option>
+          <option [value]="20">20 Form</option>
+          <option [value]="50">50 Form</option>
         </select>
+
+        <button
+          *ngIf="searchTerm() || selectedArea()"
+          class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+          (click)="clearFilters()"
+        >
+          Limpiar filtros
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Tabla de Formularios -->
-  <div class="bg-white p-4 rounded-md shadow-md mt-6">
+  <div *ngIf="!loading() && !error() && filteredVolunteers().length > 0" class="bg-white p-4 rounded-md shadow-md mt-6">
     <table class="w-full border-collapse border border-gray-300">
       <thead>
       <tr class="bg-gray-100">
@@ -66,7 +87,7 @@
         <th class="px-4 py-2 text-center border border-gray-300 w-40">Nombres</th>
         <th class="px-4 py-2 text-center border border-gray-300 w-52">Apellidos</th>
         <th class="px-4 py-2 text-center border border-gray-300 w-32">Área</th>
-        <th class="px-4 py-2 text-center border border-gray-300 w-28">Fecha</th>
+        <th class="px-4 py-2 text-center border border-gray-300 w-28">Fecha Solicitud</th>
         <th class="px-4 py-2 text-center border border-gray-300 w-20">Acción</th>
       </tr>
       </thead>
@@ -78,27 +99,77 @@
           {{ volunteer.paternalSurname }} {{ volunteer.maternalSurname }}
         </td>
         <td class="px-4 py-2 border border-gray-300 text-left">
-          {{ volunteer.areaId }}
+          {{ volunteer.areaName }}
         </td>
         <td class="px-4 py-2 border border-gray-300 text-center">
-          {{ volunteer.birthdate | date:'dd/MM/yyyy' }}
+          {{ volunteer.submissionDate | date:'dd/MM/yyyy' }}
         </td>
         <td class="px-4 py-2 border border-gray-300 text-center flex justify-center gap-2">
           <!-- Botón para ver detalles del formulario -->
           <button class="text-pink-500 hover:text-pink-700" [routerLink]="['/form', volunteer.userId]">
             <i class="fa-solid fa-pen"></i>
           </button>
-          <button class="text-red-500 hover:text-red-700">
-            <i class="fa-solid fa-trash"></i>
-          </button>
         </td>
       </tr>
       </tbody>
     </table>
 
-    <!-- Mensaje si no hay formularios -->
-    <p *ngIf="filteredVolunteers().length === 0" class="text-center text-gray-500 mt-4">
-      No hay formularios registrados.
-    </p>
+    <!-- Controles de paginación -->
+    <div *ngIf="filteredVolunteers().length > formsPerPage()" class="flex justify-center mt-4 gap-2">
+      <button
+        (click)="currentPage.set(1)"
+        class="px-3 py-1 rounded-md"
+        [class.bg-gray-300]="currentPage() === 1"
+        [disabled]="currentPage() === 1"
+      >
+        <i class="fa-solid fa-angles-left"></i>
+      </button>
+      <button
+        (click)="prevPage()"
+        class="px-3 py-1 rounded-md"
+        [class.bg-gray-300]="currentPage() === 1"
+        [disabled]="currentPage() === 1"
+      >
+        <i class="fa-solid fa-angle-left"></i>
+      </button>
+      <div class="px-4 py-1 bg-teal-500 text-white rounded-md">
+        Página {{ currentPage() }} de {{ getTotalPages() }}
+      </div>
+      <button
+        (click)="nextPage()"
+        class="px-3 py-1 rounded-md"
+        [class.bg-gray-300]="currentPage() === getTotalPages()"
+        [disabled]="currentPage() === getTotalPages()"
+      >
+        <i class="fa-solid fa-angle-right"></i>
+      </button>
+      <button
+        (click)="currentPage.set(getTotalPages())"
+        class="px-3 py-1 rounded-md"
+        [class.bg-gray-300]="currentPage() === getTotalPages()"
+        [disabled]="currentPage() === getTotalPages()"
+      >
+        <i class="fa-solid fa-angles-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mensaje si no hay formularios -->
+  <div *ngIf="!loading() && !error() && noData()" class="mt-6 bg-yellow-100 p-4 rounded-md shadow-md text-center">
+    <p class="text-yellow-700 font-semibold">No hay voluntarios pendientes que coincidan con los criterios de búsqueda.</p>
+
+    <div *ngIf="searchTerm() || selectedArea()" class="mt-2">
+      <p class="text-yellow-600">Prueba ajustando los filtros de búsqueda.</p>
+      <button
+        class="mt-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md"
+        (click)="clearFilters()"
+      >
+        Limpiar filtros
+      </button>
+    </div>
+
+    <div *ngIf="!searchTerm() && !selectedArea()" class="mt-2">
+      <p class="text-yellow-600">No hay solicitudes de voluntarios pendientes en este momento.</p>
+    </div>
   </div>
 </div>

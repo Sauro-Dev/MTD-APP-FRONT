@@ -3,14 +3,25 @@ export interface VolunteerPending {
   name: string;
   paternalSurname: string;
   maternalSurname: string;
-  dni: string;
   email: string;
-  birthdate: string;
+  dni: string;
   phoneNumber: string;
   codeNumber: string;
-  country: string;
-  region: string;
+  birthdate: string;
+  areaId: number | string;
+  areaName : string;
+  estimatedHours: string;
   motivation: string;
-  estimatedHours: string; // Asegúrate de que está definido aquí
-  areaId: string;
+  status: string;
+  submissionDate: string;
+}
+
+export enum VolunteerStatus {
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED'
+}
+
+export interface ApiResponse {
+  message: string;
 }

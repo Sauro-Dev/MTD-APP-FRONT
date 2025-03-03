@@ -4,7 +4,20 @@
 
   <h1 class="text-xl font-bold text-center mb-4">Formulario de Voluntariado</h1>
 
-  <div *ngIf="volunteer()" class="grid grid-cols-2 gap-4">
+  <!-- Estado de carga -->
+  <div *ngIf="loading()" class="flex justify-center items-center py-8">
+    <p class="text-blue-500">Cargando información...</p>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="error()" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    <p>{{ error() }}</p>
+    <button (click)="goBack()" class="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md">
+      Volver a la lista
+    </button>
+  </div>
+
+  <div *ngIf="!loading() && !error() && volunteer()" class="grid grid-cols-2 gap-4">
     <div>
       <label class="font-semibold">Nombres:</label>
       <input class="border p-2 rounded-md w-full" [value]="volunteer()?.name" readonly>
@@ -31,41 +44,95 @@
       <input class="border p-2 rounded-md w-full" [value]="volunteer()?.codeNumber" readonly>
     </div>
     <div>
-      <label class="font-semibold">País:</label>
-      <input class="border p-2 rounded-md w-full"
-             [value]="volunteer()?.country || 'No especificado'" readonly>
-    </div>
-    <div>
-      <label class="font-semibold">Región:</label>
-      <input class="border p-2 rounded-md w-full"
-             [value]="volunteer()?.region || 'No especificado'" readonly>
-    </div>
-    <div>
       <label class="font-semibold">Horas Estimadas:</label>
       <input class="border p-2 rounded-md w-full" [value]="volunteer()?.estimatedHours" readonly>
     </div>
     <div>
       <label class="font-semibold">Área de Voluntariado:</label>
       <input class="border p-2 rounded-md w-full"
-             [value]="volunteer()?.areaId || 'Sin área'" readonly>
+             [value]="volunteer()?.areaName" readonly>
     </div>
     <div class="col-span-2">
       <label class="font-semibold">Motivación:</label>
-      <textarea class="border p-2 rounded-md w-full" readonly>
-        {{ volunteer()?.motivation }}
-      </textarea>
+      <textarea class="border p-2 rounded-md w-full h-32" readonly>{{ volunteer()?.motivation }}</textarea>
     </div>
   </div>
 
   <!-- Botones de Acción -->
-  <div class="flex justify-center gap-4 mt-6">
-    <button class="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-700"
-            (click)="verifyVolunteer()">
-      Verificar
+  <div *ngIf="!loading() && !error() && volunteer()" class="flex justify-center gap-4 mt-6">
+    <button class="px-6 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700"
+            [disabled]="processingAction()"
+            (click)="showApproveModal()">
+      <span *ngIf="processingAction()">Procesando...</span>
+      <span *ngIf="!processingAction()">Verificar</span>
     </button>
-    <button class="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-700"
-            (click)="goBack()">
-      Cancelar
+    <button class="px-6 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-700"
+            [disabled]="processingAction()"
+            (click)="showRejectModal()">
+      <span *ngIf="processingAction()">Procesando...</span>
+      <span *ngIf="!processingAction()">Denegar</span>
     </button>
+  </div>
+
+  <!-- Modal de Aprobación -->
+  <div *ngIf="showApproval()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <h2 class="text-xl font-bold mb-4">Usted está aprobando este formulario</h2>
+
+      <p class="mb-4">¿Deseas dejar un mensaje o comentario?</p>
+
+      <textarea
+        class="w-full p-2 border rounded-md mb-4 h-24"
+        placeholder="Comentarios (opcional)"
+        [(ngModel)]="adminComments">
+      </textarea>
+
+      <div class="flex justify-center gap-4">
+        <button
+          class="px-6 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700"
+          [disabled]="processingAction()"
+          (click)="validateVolunteer(true)">
+          <span *ngIf="processingAction()">Procesando...</span>
+          <span *ngIf="!processingAction()">Confirmar</span>
+        </button>
+        <button
+          class="px-6 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-700"
+          [disabled]="processingAction()"
+          (click)="closeModals()">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Rechazo -->
+  <div *ngIf="showRejection()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+      <h2 class="text-xl font-bold mb-4">Usted está rechazando este formulario</h2>
+
+      <p class="mb-4">¿Deseas dejar un mensaje o comentario?</p>
+
+      <textarea
+        class="w-full p-2 border rounded-md mb-4 h-24"
+        placeholder="Comentarios (opcional)"
+        [(ngModel)]="adminComments">
+      </textarea>
+
+      <div class="flex justify-center gap-4">
+        <button
+          class="px-6 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700"
+          [disabled]="processingAction()"
+          (click)="validateVolunteer(false)">
+          <span *ngIf="processingAction()">Procesando...</span>
+          <span *ngIf="!processingAction()">Confirmar</span>
+        </button>
+        <button
+          class="px-6 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-700"
+          [disabled]="processingAction()"
+          (click)="closeModals()">
+          Cancelar
+        </button>
+      </div>
+    </div>
   </div>
 </div>
