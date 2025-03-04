@@ -49,3 +49,36 @@
     Agregar
   </button>
 </div>
+
+<div class="p-6 bg-white shadow-md rounded-md mt-6">
+  <h1 class="text-2xl font-bold mb-4">Trayectoria</h1>
+
+  <!-- Si ya existe una trayectoria, se muestra -->
+  <div *ngIf="historyFile">
+    <h3 class="text-lg font-semibold">Trayectoria actual:</h3>
+    <img [ngSrc]="historyFile.safeUrl" width="500" alt="Trayectoria" class="w-full rounded-md shadow-lg mx-auto" />
+  </div>
+
+  <!-- Si no existe, se muestra el formulario para cargar una imagen -->
+  <div *ngIf="!historyFile">
+    <h2 class="text-xl font-semibold mt-6 mb-2">Agregar Trayectoria</h2>
+    <div class="border-dashed border-2 border-gray-300 p-6 rounded-md text-center cursor-pointer"
+         (dragover)="onHistoryDragOver($event)"
+         (drop)="onHistoryDrop($event)"
+         (click)="historyFileInput.click()">
+      <input type="file" #historyFileInput (change)="onHistoryFileSelected($event)" accept="image/png, image/jpeg, image/webp" hidden />
+      <span class="text-gray-500">Elige una imagen o arrástrala acá</span>
+    </div>
+
+    <div *ngIf="previewHistoryImage" class="mt-4">
+      <h3 class="text-lg font-semibold">Vista previa:</h3>
+      <img [src]="previewHistoryImage" alt="Vista previa Trayectoria" class="w-full max-w-md rounded shadow-md mx-auto" />
+    </div>
+
+    <button (click)="uploadHistory()"
+            class="bg-[#ED117F] text-white px-4 py-2 rounded mt-2 w-full hover:bg-[#D0106F]"
+            [disabled]="!selectedHistoryFile">
+      Agregar Trayectoria
+    </button>
+  </div>
+</div>

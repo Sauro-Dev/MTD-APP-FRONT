@@ -26,12 +26,33 @@ export class AboutUsControlComponent {
   fileSector = 'FEATURED_MAKER';
   description: string = '';
 
+  historyFile: (LandingFile & { safeUrl: SafeUrl }) | null = null;
+  selectedHistoryFile?: File;
+  previewHistoryImage?: SafeUrl;
+
+  @ViewChild('historyFileInput') historyFileInput!: ElementRef;
+
   @ViewChild('fileInput') fileInput!: ElementRef;
 
   constructor(private landingFileService: LandingFileService,
               private sanitizer: DomSanitizer) {
     this.loadMakers();
+    this.loadHistory();
   }
+
+
+  loadHistory() {
+    this.landingFileService.getAllFiles().subscribe((files) => {
+      const historyFiles = files.filter(file => file.fileSector === 'HISTORY');
+      if (historyFiles.length > 0) {
+        this.historyFile = {
+          ...historyFiles[0],
+          safeUrl: this.sanitizeUrl(historyFiles[0].fileName)
+        };
+      }
+    });
+  }
+
 
   loadMakers() {
     this.landingFileService.getAllFiles().subscribe((files) => {
@@ -96,4 +117,41 @@ export class AboutUsControlComponent {
         this.description = '';
       });
   }
+
+  uploadHistory() {
+    // Evitamos subir si ya existe una imagen o no se ha seleccionado ninguna
+    if (!this.selectedHistoryFile || this.historyFile) return;
+
+    this.landingFileService.uploadFile(this.selectedHistoryFile, this.adminId, 'HISTORY')
+      .subscribe((response: LandingFile) => {
+        this.historyFile = {
+          ...response,
+          safeUrl: this.sanitizeUrl(response.fileName)
+        };
+        // Reiniciamos las variables de carga
+        this.selectedHistoryFile = undefined;
+        this.previewHistoryImage = undefined;
+      });
+  }
+
+  onHistoryFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedHistoryFile = input.files[0];
+      this.previewHistoryImage = URL.createObjectURL(this.selectedHistoryFile);
+    }
+  }
+
+  onHistoryDragOver(event: DragEvent) {
+    event.preventDefault();
+  }
+
+  onHistoryDrop(event: DragEvent) {
+    event.preventDefault();
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.selectedHistoryFile = event.dataTransfer.files[0];
+      this.previewHistoryImage = URL.createObjectURL(this.selectedHistoryFile);
+    }
+  }
+
 }
