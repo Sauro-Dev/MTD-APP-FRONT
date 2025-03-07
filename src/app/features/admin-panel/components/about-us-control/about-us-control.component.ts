@@ -28,7 +28,6 @@ export class AboutUsControlComponent implements OnInit {
   description: string = '';
   isLoading = false;
 
-  // Trayectoria
   historyFiles: (LandingFile & { safeUrl: SafeUrl })[] = [];
   historyIndex = 0;
   selectedHistoryFile?: File;
@@ -44,7 +43,6 @@ export class AboutUsControlComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Obtener el email del usuario autenticado
     this.authService.getUserDetails().then(userDetails => {
       if (userDetails && userDetails.email) {
         this.adminEmail = userDetails.email;
@@ -59,12 +57,10 @@ export class AboutUsControlComponent implements OnInit {
     });
   }
 
-  // Propiedad para acceder al maker actual
   get currentMaker() {
     return this.makers.length > 0 ? this.makers[this.currentIndex] : null;
   }
 
-  // Propiedad para acceder a la trayectoria actual
   get currentHistory() {
     return this.historyFiles.length > 0 ? this.historyFiles[this.historyIndex] : null;
   }
