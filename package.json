@@ -21,6 +21,7 @@
     "@angular/platform-server": "^19.1.0",
     "@angular/router": "^19.1.7",
     "@angular/ssr": "^19.1.7",
+    "embla-carousel-angular": "^19.0.0",
     "express": "^4.18.2",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",

@@ -19,6 +19,18 @@ module.exports = {
       fontFamily: {
         poppins: ['Poppins', 'sans-serif'],
       },
+      width: {
+        '24rem': '24rem',
+        '26rem': '26rem',
+        '28rem': '28rem',
+        '30rem': '30rem',
+      },
+      height: {
+        '24rem': '24rem',
+        '26rem': '26rem',
+        '28rem': '28rem',
+        '30rem': '30rem',
+      },
       animation: {
         'infinite-scroll-half': 'infinite-scroll-half 15s linear infinite',
         'infinite-scroll-half-mobile': 'infinite-scroll-half-mobile 20s linear infinite',
