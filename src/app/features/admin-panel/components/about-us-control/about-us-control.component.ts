@@ -1,9 +1,10 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { LandingFile } from '../../../../core/interfaces/landing-file';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { LandingFileService } from '../../../../core/services/landing-file-service';
+import { LandingFileService } from '../../../../core/services/landing-file.service';
 import { FormsModule } from '@angular/forms';
 import { NgIf, NgOptimizedImage } from '@angular/common';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   standalone: true,
@@ -16,15 +17,16 @@ import { NgIf, NgOptimizedImage } from '@angular/common';
   templateUrl: './about-us-control.component.html',
   styleUrl: './about-us-control.component.css'
 })
-export class AboutUsControlComponent {
+export class AboutUsControlComponent implements OnInit {
   makers: (LandingFile & { safeUrl: SafeUrl })[] = [];
   currentIndex = 0;
   selectedFile?: File;
   previewImage?: SafeUrl;
   makerName = '';
-  adminId = 1;
+  adminEmail: string | null = null;
   fileSector = 'FEATURED_MAKER';
   description: string = '';
+  isLoading = false;
 
   // Trayectoria
   historyFiles: (LandingFile & { safeUrl: SafeUrl })[] = [];
@@ -35,40 +37,73 @@ export class AboutUsControlComponent {
   @ViewChild('fileInput') fileInput!: ElementRef;
   @ViewChild('historyFileInput') historyFileInput!: ElementRef;
 
-  constructor(private landingFileService: LandingFileService, private sanitizer: DomSanitizer) {
-    this.loadMakers();
-    this.loadHistory();
+  constructor(
+    private landingFileService: LandingFileService,
+    private sanitizer: DomSanitizer,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    // Obtener el email del usuario autenticado
+    this.authService.getUserDetails().then(userDetails => {
+      if (userDetails && userDetails.email) {
+        this.adminEmail = userDetails.email;
+        this.loadMakers();
+        this.loadHistory();
+      } else {
+        console.error('No se pudo obtener el email del usuario');
+        alert('Error de autenticación. Por favor, inicia sesión de nuevo.');
+      }
+    }).catch(error => {
+      console.error('Error al obtener detalles del usuario:', error);
+    });
   }
 
   // Propiedad para acceder al maker actual
   get currentMaker() {
-    return this.makers[this.currentIndex];
+    return this.makers.length > 0 ? this.makers[this.currentIndex] : null;
   }
 
   // Propiedad para acceder a la trayectoria actual
   get currentHistory() {
-    return this.historyFiles[this.historyIndex];
+    return this.historyFiles.length > 0 ? this.historyFiles[this.historyIndex] : null;
   }
 
   loadMakers() {
-    this.landingFileService.getAllFiles().subscribe((files) => {
-      this.makers = files
-        .filter((file) => file.fileSector === 'FEATURED_MAKER')
-        .map((file) => ({
-          ...file,
-          safeUrl: this.sanitizeUrl(file.fileName),
-        }));
+    this.isLoading = true;
+    this.landingFileService.getAllFiles().subscribe({
+      next: (files) => {
+        this.makers = files
+          .filter((file) => file.fileSector === 'FEATURED_MAKER')
+          .map((file) => ({
+            ...file,
+            safeUrl: this.sanitizeUrl(file.fileName),
+          }));
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar makers:', err);
+        this.isLoading = false;
+      }
     });
   }
 
   loadHistory() {
-    this.landingFileService.getAllFiles().subscribe((files) => {
-      this.historyFiles = files
-        .filter((file) => file.fileSector === 'HISTORY')
-        .map((file) => ({
-          ...file,
-          safeUrl: this.sanitizeUrl(file.fileName),
-        }));
+    this.isLoading = true;
+    this.landingFileService.getAllFiles().subscribe({
+      next: (files) => {
+        this.historyFiles = files
+          .filter((file) => file.fileSector === 'HISTORY')
+          .map((file) => ({
+            ...file,
+            safeUrl: this.sanitizeUrl(file.fileName),
+          }));
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar historia:', err);
+        this.isLoading = false;
+      }
     });
   }
 
@@ -81,19 +116,35 @@ export class AboutUsControlComponent {
   }
 
   deleteMaker(id: number) {
-    this.landingFileService.disableFile(id).subscribe(() => {
-      this.makers = this.makers.filter((m) => m.idLandingFiles !== id);
-      if (this.currentIndex >= this.makers.length && this.makers.length > 0) {
-        this.currentIndex = this.makers.length - 1;
+    if (!confirm('¿Estás seguro de que deseas eliminar este maker?')) return;
+
+    this.landingFileService.disableFile(id).subscribe({
+      next: () => {
+        this.makers = this.makers.filter((m) => m.idLandingFiles !== id);
+        if (this.currentIndex >= this.makers.length && this.makers.length > 0) {
+          this.currentIndex = this.makers.length - 1;
+        }
+      },
+      error: (err) => {
+        console.error('Error al eliminar maker:', err);
+        alert('No se pudo eliminar el maker.');
       }
     });
   }
 
   deleteHistory(id: number) {
-    this.landingFileService.disableFile(id).subscribe(() => {
-      this.historyFiles = this.historyFiles.filter((h) => h.idLandingFiles !== id);
-      if (this.historyIndex >= this.historyFiles.length && this.historyFiles.length > 0) {
-        this.historyIndex = this.historyFiles.length - 1;
+    if (!confirm('¿Estás seguro de que deseas eliminar esta imagen de historia?')) return;
+
+    this.landingFileService.disableFile(id).subscribe({
+      next: () => {
+        this.historyFiles = this.historyFiles.filter((h) => h.idLandingFiles !== id);
+        if (this.historyIndex >= this.historyFiles.length && this.historyFiles.length > 0) {
+          this.historyIndex = this.historyFiles.length - 1;
+        }
+      },
+      error: (err) => {
+        console.error('Error al eliminar historia:', err);
+        alert('No se pudo eliminar la imagen de historia.');
       }
     });
   }
@@ -163,37 +214,72 @@ export class AboutUsControlComponent {
   }
 
   uploadMaker() {
-    if (!this.selectedFile || this.makers.length >= 10 || !this.makerName || !this.description) return;
+    if (!this.selectedFile || this.makers.length >= 10 || !this.makerName || !this.description) {
+      alert('Debes completar todos los campos y seleccionar una imagen. Además, no puedes tener más de 10 makers.');
+      return;
+    }
 
+    if (!this.adminEmail) {
+      alert('Error de autenticación. Por favor, inicia sesión de nuevo.');
+      return;
+    }
+
+    this.isLoading = true;
     this.landingFileService
-      .uploadFile(this.selectedFile, this.adminId, this.fileSector, this.makerName, this.description)
-      .subscribe((response: LandingFile) => {
-        const newMaker = {
-          ...response,
-          safeUrl: this.sanitizeUrl(response.fileName),
-        };
+      .uploadFile(this.selectedFile, this.adminEmail, this.fileSector, this.makerName, this.description)
+      .subscribe({
+        next: (response: LandingFile) => {
+          const newMaker = {
+            ...response,
+            safeUrl: this.sanitizeUrl(response.fileName),
+          };
 
-        this.makers.push(newMaker);
-        this.selectedFile = undefined;
-        this.previewImage = undefined;
-        this.makerName = '';
-        this.description = '';
+          this.makers.push(newMaker);
+          this.selectedFile = undefined;
+          this.previewImage = undefined;
+          this.makerName = '';
+          this.description = '';
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error al subir maker:', err);
+          alert('Error al subir el maker. Por favor, intenta de nuevo.');
+          this.isLoading = false;
+        }
       });
   }
 
   uploadHistory() {
-    if (!this.selectedHistoryFile) return;
+    if (!this.selectedHistoryFile) {
+      alert('Debes seleccionar una imagen');
+      return;
+    }
 
-    this.landingFileService.uploadFile(this.selectedHistoryFile, this.adminId, 'HISTORY').subscribe((response: LandingFile) => {
-      const newHistory = {
-        ...response,
-        safeUrl: this.sanitizeUrl(response.fileName),
-      };
+    if (!this.adminEmail) {
+      alert('Error de autenticación. Por favor, inicia sesión de nuevo.');
+      return;
+    }
 
-      this.historyFiles.push(newHistory);
-      this.selectedHistoryFile = undefined;
-      this.previewHistoryImage = undefined;
-    });
+    this.isLoading = true;
+    this.landingFileService.uploadFile(this.selectedHistoryFile, this.adminEmail, 'HISTORY')
+      .subscribe({
+        next: (response: LandingFile) => {
+          const newHistory = {
+            ...response,
+            safeUrl: this.sanitizeUrl(response.fileName),
+          };
+
+          this.historyFiles.push(newHistory);
+          this.selectedHistoryFile = undefined;
+          this.previewHistoryImage = undefined;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error al subir historia:', err);
+          alert('Error al subir la imagen de historia. Por favor, intenta de nuevo.');
+          this.isLoading = false;
+        }
+      });
   }
 
   prevMaker() {
