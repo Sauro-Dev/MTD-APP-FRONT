@@ -55,10 +55,18 @@ export class BannerComponent implements OnInit {
       next: (files) => {
         this.banners = files
           .filter(file => file.fileSector === 'BANNER')
-          .map(file => ({
-            ...file,
-            safeUrl: this.sanitizeUrl(file.fileName)
-          }));
+          .map(file => {
+            const fileUrl = file.fileName.startsWith('http')
+              ? file.fileName
+              : `https://pub-98b219d2225448e198655a0ecbea1653.r2.dev/${file.fileName}`;
+
+            console.log("[Frontend] Banner loaded:", fileUrl);
+
+            return {
+              ...file,
+              safeUrl: this.sanitizeUrl(fileUrl)
+            };
+          });
 
         if (this.banners.length > 0) {
           this.currentIndex = 0;
@@ -66,7 +74,7 @@ export class BannerComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error al cargar banners:', err);
+        console.error('[Frontend] Error al cargar banners:', err);
         this.errorMessage = 'Error al cargar los banners. Por favor, intenta de nuevo.';
         this.isLoading = false;
       }
@@ -172,12 +180,18 @@ export class BannerComponent implements OnInit {
     this.landingFileService.uploadFile(this.selectedFile, this.adminEmail, this.fileSector)
       .subscribe({
         next: (response: LandingFile) => {
+          const fileUrl = response.fileName.startsWith('http')
+            ? response.fileName
+            : `https://pub-98b219d2225448e198655a0ecbea1653.r2.dev/${response.fileName}`;
+
           const newBanner = {
             ...response,
-            safeUrl: this.sanitizeUrl(response.fileName)
+            safeUrl: this.sanitizeUrl(fileUrl) // ✅ Ensure correct URL
           };
 
-          this.banners.push(newBanner);
+          console.log("[Frontend] New banner added:", newBanner);
+
+          this.banners = [...this.banners, newBanner]; // ✅ Force UI re-render
           this.selectedFile = undefined;
           this.previewImage = undefined;
 
@@ -191,6 +205,5 @@ export class BannerComponent implements OnInit {
           this.isLoading = false;
         }
       });
-    this.loadBanners();
   }
 }

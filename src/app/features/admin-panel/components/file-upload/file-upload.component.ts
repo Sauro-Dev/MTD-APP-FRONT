@@ -153,16 +153,22 @@ export class FileUploadComponent implements OnInit {
 
     this.landingFileService.uploadFile(fileToUpload, this.adminEmail, fileSector).subscribe({
       next: (response) => {
-        this.modalMessage = 'Archivo subido exitosamente.';
-        this.showModal = true;
-        this.fetchUploadedFiles();
+        const fileUrl = response.fileName.startsWith('http')
+          ? response.fileName
+          : `https://pub-98b219d2225448e198655a0ecbea1653.r2.dev/${response.fileName}`;
 
-        // Limpiar archivo seleccionado
+        const newFile = { ...response, safeUrl: fileUrl };
+
         if (type === 'news') {
+          this.uploadedNewsFiles = [...this.uploadedNewsFiles, newFile];
           this.selectedNewsFile = null;
         } else {
+          this.uploadedMagazinesFiles = [...this.uploadedMagazinesFiles, newFile];
           this.selectedMagazineFile = null;
         }
+
+        this.modalMessage = 'Archivo subido exitosamente.';
+        this.showModal = true;
         this.isLoading = false;
       },
       error: (err) => {

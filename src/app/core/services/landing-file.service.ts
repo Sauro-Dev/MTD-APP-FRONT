@@ -54,10 +54,8 @@ export class LandingFileService {
   }
 
   uploadFile(file: File, adminEmail: string, fileSector: string, makerName?: string, description?: string): Observable<LandingFile> {
-    // Corregir el tipo MIME si es necesario
     const correctedFile = this.detectCorrectMimeType(file);
 
-    // Validar tipo después de intentar corregirlo
     if (!this.ALLOWED_TYPES.includes(correctedFile.type)) {
       console.error(`[LandingFile] Tipo de archivo no permitido: ${correctedFile.type}`);
       return throwError(() => new Error(`Tipo de archivo no permitido. Solo se aceptan PNG, JPG, WEBP y PDF. Detectado: ${correctedFile.type}`));
@@ -71,21 +69,16 @@ export class LandingFileService {
     if (makerName) {
       formData.append('makerName', makerName);
     }
-
     if (description) {
       formData.append('description', description);
     }
 
-    // Obtener el token manualmente para asegurar que se envía
     const token = this.authService.getToken();
-
-    // Asegurar que existe un token
     if (!token) {
       console.error('[LandingFile] No hay token de autenticación disponible');
       return throwError(() => new Error('No estás autenticado. Por favor, inicia sesión.'));
     }
 
-    // Configurar opciones con headers explícitos
     const options = {
       headers: new HttpHeaders({
         'Authorization': `Bearer ${token}`
@@ -95,6 +88,7 @@ export class LandingFileService {
     return this.http.post<LandingFile>(`${this.baseUrl}/register`, formData, options)
       .pipe(
         tap(response => {
+          console.log("[Frontend] Upload response:", response);
         }),
         catchError(this.handleError)
       );

@@ -199,7 +199,7 @@ export class AboutUsControlComponent implements OnInit {
     event.preventDefault();
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
       const file = event.dataTransfer.files[0];
-      const maxSize = 5 * 1024 * 1024; // 5MB
+      const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         alert('La imagen no puede superar los 5MB');
         return;
@@ -221,16 +221,21 @@ export class AboutUsControlComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.landingFileService
-      .uploadFile(this.selectedFile, this.adminEmail, this.fileSector, this.makerName, this.description)
+    this.landingFileService.uploadFile(this.selectedFile, this.adminEmail, this.fileSector, this.makerName, this.description)
       .subscribe({
         next: (response: LandingFile) => {
+          const fileUrl = response.fileName.startsWith('http')
+            ? response.fileName
+            : `https://pub-98b219d2225448e198655a0ecbea1653.r2.dev/${response.fileName}`;
+
           const newMaker = {
             ...response,
-            safeUrl: this.sanitizeUrl(response.fileName),
+            safeUrl: this.sanitizeUrl(fileUrl),
           };
 
-          this.makers.push(newMaker);
+          console.log("[Frontend] New maker added:", newMaker);
+
+          this.makers = [...this.makers, newMaker];
           this.selectedFile = undefined;
           this.previewImage = undefined;
           this.makerName = '';
@@ -260,12 +265,18 @@ export class AboutUsControlComponent implements OnInit {
     this.landingFileService.uploadFile(this.selectedHistoryFile, this.adminEmail, 'HISTORY')
       .subscribe({
         next: (response: LandingFile) => {
+          const fileUrl = response.fileName.startsWith('http')
+            ? response.fileName
+            : `https://pub-98b219d2225448e198655a0ecbea1653.r2.dev/${response.fileName}`;
+
           const newHistory = {
             ...response,
-            safeUrl: this.sanitizeUrl(response.fileName),
+            safeUrl: this.sanitizeUrl(fileUrl),
           };
 
-          this.historyFiles.push(newHistory);
+          console.log("[Frontend] New history added:", newHistory);
+
+          this.historyFiles = [...this.historyFiles, newHistory];
           this.selectedHistoryFile = undefined;
           this.previewHistoryImage = undefined;
           this.isLoading = false;
