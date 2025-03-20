@@ -26,19 +26,20 @@
     Eliminar
   </button>
 
-  <!-- Agregar Banner -->
-  <h2 class="text-xl font-semibold mt-6 mb-2">Agregar Banner</h2>
-  <div class="border-dashed border-2 border-gray-300 p-6 rounded-md text-center cursor-pointer"
-       (dragover)="onDragOver($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
-    <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/webp" hidden />
-    <span class="text-gray-500">Elige una imagen o arrástrala acá</span>
-  </div>
-
-  <!-- ✅ Vista previa de la imagen seleccionada -->
-  <div *ngIf="previewImage" class="mt-4">
-    <h3 class="text-lg font-semibold">Vista previa:</h3>
-    <img [src]="previewImage" alt="Vista previa" class="w-full max-w-md rounded shadow-md" />
-  </div>
+    <!-- Agregar Banner -->
+    <h2 class="text-xl font-semibold mt-6 mb-2">Agregar Banner</h2>
+    <p class="text-gray-600 mb-3">Imágenes permitidas de aspect ratio 10:3. Ejemplo: 1000×300px, 1200×360px, 1600×480px, 2000×600px</p>
+    <div class="border-dashed border-2 border-gray-300 p-6 rounded-md text-center cursor-pointer"
+         (dragover)="onDragOver($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
+      <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/webp" hidden />
+      <span class="text-gray-500">Elige una imagen o arrástrala acá</span>
+    </div>
+  
+    <!-- ✅ Vista previa de la imagen seleccionada -->
+    <div *ngIf="previewImage" class="mt-4">
+      <h3 class="text-lg font-semibold">Vista previa:</h3>
+      <img [src]="previewImage" alt="Vista previa" class="w-full max-w-md rounded shadow-md" />
+    </div>
 
   <button (click)="uploadBanner()"
           class="bg-green-500 text-white px-4 py-2 rounded mt-2"

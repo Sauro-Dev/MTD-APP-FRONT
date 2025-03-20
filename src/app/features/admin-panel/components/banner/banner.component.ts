@@ -10,7 +10,7 @@ import {AuthService} from '../../../../core/services/auth.service';
   standalone: true,
   imports: [
     NgOptimizedImage,
-    NgIf
+    NgIf,
   ],
   templateUrl: './banner.component.html',
   styleUrl: './banner.component.css'
@@ -141,9 +141,31 @@ export class BannerComponent implements OnInit {
       return false;
     }
 
-    // Asignar el archivo y crear vista previa
-    this.selectedFile = file;
-    this.previewImage = URL.createObjectURL(file);
+    // Crear vista previa temporal
+    const tempPreviewUrl = URL.createObjectURL(file);
+    this.previewImage = this.sanitizer.bypassSecurityTrustUrl(tempPreviewUrl);
+    
+    // Validar aspect ratio 10:3
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      const targetRatio = 10 / 3;
+      const tolerance = 0.05; // 5% de tolerancia
+
+      if (Math.abs(aspectRatio - targetRatio) > tolerance) {
+        alert(`La imagen debe tener una relación de aspecto 10:3.\nTu imagen tiene una relación ${aspectRatio.toFixed(2)} (${img.width}x${img.height}px)`);
+        this.selectedFile = undefined;
+        this.previewImage = undefined;
+        URL.revokeObjectURL(tempPreviewUrl);
+      } else {
+        // Solo asignar el archivo si pasa la validación
+        this.selectedFile = file;
+      }
+    };
+    
+    // Cargar la imagen para validación
+    img.src = tempPreviewUrl;
+    
     return true;
   }
 
