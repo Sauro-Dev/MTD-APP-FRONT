@@ -1,51 +1,53 @@
 <nav class="bg-[#ED117F] p-4 flex items-center justify-between">
   <!-- Logo y título -->
-  <div class="flex items-center gap-2 ms-4">
-    <img
-      ngSrc="/assets/logo.png"
-      alt="Logo"
-      class="w-[86px] h-auto"
-      width="2465"
-      height="2503"
-    />
-    <span class="text-white font-semibold text-2xl uppercase leading-tight">
+  <a *ngIf="isAdmin()" href="http://localhost:5173" class="group relative flex flex-col items-center">
+    <div class="flex items-center gap-2 ms-4">
+      <img
+        ngSrc="/assets/logo.png"
+        alt="Logo"
+        class="w-[86px] h-auto"
+        width="2465"
+        height="2503"
+      />
+      <span class="text-white font-semibold text-2xl uppercase leading-tight">
       Make The <br> Difference
     </span>
-  </div>
+    </div>
+  </a>
 
   <!-- Menú de navegación -->
   <div class="navbar-links flex gap-12">
     <!-- Icono: Usuarios -->
-    <a routerLink="/users" class="group relative flex flex-col items-center">
-      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">
-        <i class="fa-solid fa-users-gear text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>
-      </div>
-      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Usuarios</span>
-    </a>
+<!--    <a routerLink="/users" class="group relative flex flex-col items-center">-->
+<!--      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">-->
+<!--        <i class="fa-solid fa-users-gear text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>-->
+<!--      </div>-->
+<!--      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Usuarios</span>-->
+<!--    </a>-->
 
     <!-- Icono: Calendario -->
-    <div class="group relative flex flex-col items-center">
-      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">
-        <i class="fa-solid fa-calendar-days text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>
-      </div>
-      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Calendario</span>
-    </div>
+<!--    <div class="group relative flex flex-col items-center">-->
+<!--      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">-->
+<!--        <i class="fa-solid fa-calendar-days text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>-->
+<!--      </div>-->
+<!--      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Calendario</span>-->
+<!--    </div>-->
 
     <!-- Icono: Áreas con redirección -->
-    <a routerLink="/areas" class="group relative flex flex-col items-center">
-      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">
-        <i class="fa-solid fa-layer-group text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>
-      </div>
-      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Áreas</span>
-    </a>
+<!--    <a routerLink="/areas" class="group relative flex flex-col items-center">-->
+<!--      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">-->
+<!--        <i class="fa-solid fa-layer-group text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>-->
+<!--      </div>-->
+<!--      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Áreas</span>-->
+<!--    </a>-->
 
     <!-- Icono: Asistencias -->
-    <div class="group relative flex flex-col items-center">
-      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">
-        <i class="fa-solid fa-list-check text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>
-      </div>
-      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Asistencias</span>
-    </div>
+<!--    <div class="group relative flex flex-col items-center">-->
+<!--      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">-->
+<!--        <i class="fa-solid fa-list-check text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>-->
+<!--      </div>-->
+<!--      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Asistencias</span>-->
+<!--    </div>-->
 
     <!-- Icono: Panel de control (solo ADMIN) -->
     <a
@@ -53,10 +55,10 @@
       routerLink="/admin-panel"
       class="group relative flex flex-col items-center"
     >
-      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">
-        <i class="fa-solid fa-gear text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>
-      </div>
-      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Panel de control</span>
+<!--      <div class="p-3 rounded-full transition duration-300 group-hover:bg-white">-->
+<!--        <i class="fa-solid fa-gear text-white transition duration-300 group-hover:text-[#ED117F] text-4xl"></i>-->
+<!--      </div>-->
+<!--      <span class="opacity-0 group-hover:opacity-100 transition duration-300 text-white mt-1 text-lg font-medium">Panel de control</span>-->
     </a>
   </div>
 
