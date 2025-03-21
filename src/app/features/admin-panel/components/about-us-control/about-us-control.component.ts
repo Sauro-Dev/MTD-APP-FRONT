@@ -33,8 +33,15 @@ export class AboutUsControlComponent implements OnInit {
   selectedHistoryFile?: File;
   previewHistoryImage?: SafeUrl;
 
+  teamFiles: (LandingFile & { safeUrl: SafeUrl })[] = [];
+  teamIndex = 0;
+  selectedTeamFile?: File;
+  previewTeamImage?: SafeUrl;
+
+
   @ViewChild('fileInput') fileInput!: ElementRef;
   @ViewChild('historyFileInput') historyFileInput!: ElementRef;
+  @ViewChild('teamFileInput') teamFileInput!: ElementRef;
 
   constructor(
     private landingFileService: LandingFileService,
@@ -48,6 +55,7 @@ export class AboutUsControlComponent implements OnInit {
         this.adminEmail = userDetails.email;
         this.loadMakers();
         this.loadHistory();
+        this.loadTeam();
       } else {
         console.error('No se pudo obtener el email del usuario');
         alert('Error de autenticación. Por favor, inicia sesión de nuevo.');
@@ -83,6 +91,26 @@ export class AboutUsControlComponent implements OnInit {
       }
     });
   }
+
+  loadTeam() {
+    this.isLoading = true;
+    this.landingFileService.getAllFiles().subscribe({
+      next: (files) => {
+        this.teamFiles = files
+          .filter((file) => file.fileSector === 'TEAM')
+          .map((file) => ({
+            ...file,
+            safeUrl: this.sanitizeUrl(file.fileName),
+          }));
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar equipo:', err);
+        this.isLoading = false;
+      }
+    });
+  }
+
 
   loadHistory() {
     this.isLoading = true;
@@ -209,6 +237,48 @@ export class AboutUsControlComponent implements OnInit {
     }
   }
 
+  uploadTeamMember() {
+    if (!this.selectedTeamFile || !this.makerName|| !this.description) {
+      alert('Debes completar todos los campos y seleccionar una imagen.');
+      return;
+    }
+
+    if (!this.adminEmail) {
+      alert('Error de autenticación. Por favor, inicia sesión de nuevo.');
+      return;
+    }
+
+    this.isLoading = true;
+    this.landingFileService
+      .uploadFile(this.selectedTeamFile, this.adminEmail, 'TEAM', this.makerName, this.description)
+      .subscribe({
+        next: (response: LandingFile) => {
+          const fileUrl = response.fileName.startsWith('http')
+            ? response.fileName
+            : `https://pub-98b219d2225448e198655a0ecbea1653.r2.dev/${response.fileName}`;
+
+          const newMember = {
+            ...response,
+            safeUrl: this.sanitizeUrl(fileUrl),
+          };
+
+          this.teamFiles.push(newMember);
+          this.selectedTeamFile = undefined;
+          this.previewTeamImage = undefined;
+          this.makerName = '';
+          this.description = '';
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error al subir miembro del equipo:', err);
+          alert('Error al subir el miembro del equipo.');
+          this.isLoading = false;
+        },
+      });
+  }
+
+
+
   uploadMaker() {
     if (!this.selectedFile || this.makers.length >= 10 || !this.makerName || !this.description) {
       alert('Debes completar todos los campos y seleccionar una imagen. Además, no puedes tener más de 10 makers.');
@@ -232,8 +302,6 @@ export class AboutUsControlComponent implements OnInit {
             ...response,
             safeUrl: this.sanitizeUrl(fileUrl),
           };
-
-          console.log("[Frontend] New maker added:", newMaker);
 
           this.makers = [...this.makers, newMaker];
           this.selectedFile = undefined;
@@ -274,8 +342,6 @@ export class AboutUsControlComponent implements OnInit {
             safeUrl: this.sanitizeUrl(fileUrl),
           };
 
-          console.log("[Frontend] New history added:", newHistory);
-
           this.historyFiles = [...this.historyFiles, newHistory];
           this.selectedHistoryFile = undefined;
           this.previewHistoryImage = undefined;
@@ -287,6 +353,54 @@ export class AboutUsControlComponent implements OnInit {
           this.isLoading = false;
         }
       });
+  }
+
+  onTeamFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        alert('La imagen no puede superar los 5MB');
+        return;
+      }
+      this.selectedTeamFile = file;
+      this.previewTeamImage = URL.createObjectURL(file);
+    }
+  }
+
+
+  get currentTeam() {
+    return this.teamFiles.length > 0 ? this.teamFiles[this.teamIndex] : null;
+  }
+
+  prevTeam() {
+    if (this.teamIndex > 0) {
+      this.teamIndex--;
+    }
+  }
+
+  nextTeam() {
+    if (this.teamIndex < this.teamFiles.length - 1) {
+      this.teamIndex++;
+    }
+  }
+
+  deleteTeamMember(id: number) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este miembro del equipo?')) return;
+
+    this.landingFileService.disableFile(id).subscribe({
+      next: () => {
+        this.teamFiles = this.teamFiles.filter((m) => m.idLandingFiles !== id);
+        if (this.teamIndex >= this.teamFiles.length && this.teamFiles.length > 0) {
+          this.teamIndex = this.teamFiles.length - 1;
+        }
+      },
+      error: (err) => {
+        console.error('Error al eliminar miembro del equipo:', err);
+        alert('No se pudo eliminar el miembro del equipo.');
+      }
+    });
   }
 
   prevMaker() {

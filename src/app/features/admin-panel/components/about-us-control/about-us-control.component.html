@@ -31,7 +31,6 @@
           >
             Eliminar
           </button>
-          <button class="bg-blue-500 text-white px-3 py-2 rounded flex-1">Editar</button>
         </div>
       </div>
     </div>
@@ -84,13 +83,100 @@
   />
 
   <button
-    (click)="uploadMaker()"
+    (click)="uploadTeamMember()"
     class="bg-green-500 text-white px-4 py-2 rounded mt-2 w-full hover:bg-green-600 transition-colors"
     [disabled]="!selectedFile || makers.length >= 10"
   >
     Agregar
   </button>
 </div>
+
+<!-- Carrusel del equipo -->
+<div *ngIf="teamFiles.length > 0" class="relative w-full max-w-2xl mx-auto mt-10">
+  <h2 class="text-xl font-bold mb-4">Miembros del equipo ({{ teamFiles.length }})</h2>
+
+  <!-- Botón Anterior -->
+  <button
+    (click)="prevTeam()"
+    class="absolute left-0 top-1/2 transform -translate-y-1/2 p-2 bg-gray-300 rounded-full z-10"
+    [disabled]="teamIndex === 0"
+  >
+    ◀
+  </button>
+
+  <!-- Tarjeta Actual -->
+  <div *ngIf="currentTeam" class="w-full h-full rounded-lg overflow-hidden shadow-md">
+    <img
+      [ngSrc]="getSafeImageUrl(currentTeam)"
+      width="800"
+      height="400"
+      class="w-full h-30rem object-contain bg-gray-100"
+      [alt]="currentTeam.makerName"
+    />
+    <div class="p-4">
+      <h3 class="font-semibold text-lg mb-2">{{ currentTeam.makerName }}</h3>
+      <p class="text-gray-500 text-sm mb-4">{{ currentTeam.description }}</p>
+      <div class="flex gap-2">
+        <button
+          (click)="deleteTeamMember(currentTeam.idLandingFiles)"
+          class="bg-red-500 text-white px-3 py-2 rounded flex-1"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón Siguiente -->
+  <button
+    (click)="nextTeam()"
+    class="absolute right-0 top-1/2 transform -translate-y-1/2 p-2 bg-gray-300 rounded-full z-10"
+    [disabled]="teamIndex === teamFiles.length - 1"
+  >
+    ▶
+  </button>
+</div>
+
+
+<h2 class="text-xl font-semibold mt-6 mb-2">Agregar miembro del equipo</h2>
+
+<div
+  class="border-dashed border-2 border-gray-300 p-6 rounded-md text-center cursor-pointer hover:bg-gray-50 transition-colors"
+  (click)="teamFileInput.click()"
+  (dragover)="onDragOver($event)"
+  (drop)="onDrop($event)"
+>
+  <input type="file" #teamFileInput (change)="onTeamFileSelected($event)" accept="image/*" hidden />
+  <span class="text-gray-500">Elige una imagen o arrástrala acá</span>
+</div>
+
+<div *ngIf="previewTeamImage" class="mt-4">
+  <h3 class="text-lg font-semibold">Vista previa:</h3>
+  <img [src]="previewTeamImage" alt="Vista previa" class="w-full max-w-md rounded shadow-md" />
+</div>
+
+<input
+  [(ngModel)]="makerName"
+  type="text"
+  placeholder="Nombre del miembro"
+  class="border p-2 mt-4 w-full rounded"
+/>
+<input
+  [(ngModel)]="description"
+  type="text"
+  placeholder="Cargo"
+  class="border p-2 mt-2 w-full rounded"
+/>
+
+<button
+  (click)="uploadTeamMember()"
+  class="bg-green-600 text-white px-4 py-2 rounded mt-2 w-full hover:bg-green-700"
+  [disabled]="!selectedTeamFile"
+>
+  Agregar miembro
+</button>
+
+
 
 <!-- Sección de Trayectoria -->
 <div class="p-6 bg-white shadow-md rounded-md mt-6">
@@ -117,8 +203,6 @@
         [alt]="'Trayectoria'"
       />
       <div class="p-4">
-        <h3 class="font-semibold text-lg mb-2">Trayectoria</h3>
-        <p class="text-gray-500 text-sm mb-4">Descripción de la trayectoria.</p>
         <div class="flex gap-2">
           <button
             (click)="deleteHistory(currentHistory.idLandingFiles)"

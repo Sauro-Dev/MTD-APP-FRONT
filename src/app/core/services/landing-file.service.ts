@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { LandingFile } from '../interfaces/landing-file';
 import { environment } from '../environment';
 import { AuthService } from './auth.service';
@@ -24,9 +24,6 @@ export class LandingFileService {
     private authService: AuthService
   ) {}
 
-  /**
-   * Detecta y corrige el tipo MIME de un archivo basado en su extensión
-   */
   private detectCorrectMimeType(file: File): File {
     if (this.ALLOWED_TYPES.includes(file.type)) {
       return file;
@@ -63,7 +60,7 @@ export class LandingFileService {
 
     const formData = new FormData();
     formData.append('file', correctedFile);
-    formData.append('adminId', '1'); // ID fijo para el backend
+    formData.append('adminId', '1');
     formData.append('fileSector', fileSector);
 
     if (makerName) {
@@ -87,37 +84,13 @@ export class LandingFileService {
 
     return this.http.post<LandingFile>(`${this.baseUrl}/register`, formData, options)
       .pipe(
-        tap(response => {
-          console.log("[Frontend] Upload response:", response);
-        }),
         catchError(this.handleError)
       );
   }
-
-  getFileById(id: number): Observable<string> {
-    return this.http.get(`${this.baseUrl}/${id}`, { responseType: 'text' })
-      .pipe(catchError(this.handleError));
-  }
-
   getAllFiles(): Observable<LandingFile[]> {
     return this.http.get<LandingFile[]>(`${this.baseUrl}/all`)
       .pipe(catchError(this.handleError));
   }
-
-  updateFile(id: number, file: File): Observable<LandingFile> {
-    const correctedFile = this.detectCorrectMimeType(file);
-
-    if (!this.ALLOWED_TYPES.includes(correctedFile.type)) {
-      return throwError(() => new Error(`Tipo de archivo no permitido. Solo se aceptan PNG, JPG, WEBP y PDF.`));
-    }
-
-    const formData = new FormData();
-    formData.append('file', correctedFile);
-
-    return this.http.put<LandingFile>(`${this.baseUrl}/update/${id}`, formData)
-      .pipe(catchError(this.handleError));
-  }
-
   downloadFileById(id: number): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/download/${id}`, { responseType: 'blob' })
       .pipe(catchError(this.handleError));
