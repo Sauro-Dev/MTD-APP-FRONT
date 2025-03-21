@@ -1,20 +1,22 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {LandingFileService} from '../../../../core/services/landing-file.service';
-import {NgIf, NgOptimizedImage} from '@angular/common';
-import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
-import {LandingFile} from '../../../../core/interfaces/landing-file';
-import {AuthService} from '../../../../core/services/auth.service';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { LandingFileService } from '../../../../core/services/landing-file.service';
+import { NgClass, NgIf, NgOptimizedImage } from '@angular/common';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { LandingFile } from '../../../../core/interfaces/landing-file';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-banner',
   standalone: true,
   imports: [
     NgOptimizedImage,
-    NgIf
+    NgIf,
+    NgClass,
   ],
   templateUrl: './banner.component.html',
-  styleUrl: './banner.component.css'
+  styleUrls: ['./banner.component.css']
 })
+
 export class BannerComponent implements OnInit {
   banners: (LandingFile & { safeUrl: SafeUrl })[] = [];
   currentIndex = 0;
@@ -24,6 +26,9 @@ export class BannerComponent implements OnInit {
   fileSector = 'BANNER';
   isLoading = false;
   errorMessage: string | null = null;
+
+  // Variable para gestionar el estado del drag & drop
+  draggingBanner = false;
 
   @ViewChild('fileInput') fileInput!: ElementRef;
 
@@ -141,9 +146,31 @@ export class BannerComponent implements OnInit {
       return false;
     }
 
-    // Asignar el archivo y crear vista previa
-    this.selectedFile = file;
-    this.previewImage = URL.createObjectURL(file);
+    // Crear vista previa temporal
+    const tempPreviewUrl = URL.createObjectURL(file);
+    this.previewImage = this.sanitizer.bypassSecurityTrustUrl(tempPreviewUrl);
+
+    // Validar aspect ratio 10:3
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      const targetRatio = 10 / 3;
+      const tolerance = 0.05; // 5% de tolerancia
+
+      if (Math.abs(aspectRatio - targetRatio) > tolerance) {
+        alert(`La imagen debe tener una relación de aspecto 10:3.\nTu imagen tiene una relación ${aspectRatio.toFixed(2)} (${img.width}x${img.height}px)`);
+        this.selectedFile = undefined;
+        this.previewImage = undefined;
+        URL.revokeObjectURL(tempPreviewUrl);
+      } else {
+        // Solo asignar el archivo si pasa la validación
+        this.selectedFile = file;
+      }
+    };
+
+    // Cargar la imagen para validación
+    img.src = tempPreviewUrl;
+
     return true;
   }
 
@@ -156,10 +183,17 @@ export class BannerComponent implements OnInit {
 
   onDragOver(event: DragEvent) {
     event.preventDefault();
+    this.draggingBanner = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    this.draggingBanner = false;
   }
 
   onDrop(event: DragEvent) {
     event.preventDefault();
+    this.draggingBanner = false;
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
       this.processSelectedFile(event.dataTransfer.files[0]);
     }

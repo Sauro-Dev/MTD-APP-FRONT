@@ -33,6 +33,12 @@ export class AboutUsControlComponent implements OnInit {
   selectedHistoryFile?: File;
   previewHistoryImage?: SafeUrl;
 
+  // Modal properties
+  showModal = false;
+  modalTitle = '';
+  modalMessage = '';
+  modalCallback: ((result: boolean) => void) | null = null;
+
   teamFiles: (LandingFile & { safeUrl: SafeUrl })[] = [];
   teamIndex = 0;
   selectedTeamFile?: File;
@@ -139,65 +145,79 @@ export class AboutUsControlComponent implements OnInit {
     return this.sanitizer.bypassSecurityTrustUrl(url);
   }
 
-  deleteMaker(id: number) {
-    if (!confirm('¿Estás seguro de que deseas eliminar este maker?')) return;
+  // Modal methods
+  openModal(title: string, message: string, callback: (result: boolean) => void) {
+    this.modalTitle = title;
+    this.modalMessage = message;
+    this.modalCallback = callback;
+    this.showModal = true;
+  }
 
-    this.landingFileService.disableFile(id).subscribe({
-      next: () => {
-        this.makers = this.makers.filter((m) => m.idLandingFiles !== id);
-        if (this.currentIndex >= this.makers.length && this.makers.length > 0) {
-          this.currentIndex = this.makers.length - 1;
+  closeModal(result: boolean) {
+    this.showModal = false;
+    if (this.modalCallback) {
+      this.modalCallback(result);
+      this.modalCallback = null;
+    }
+  }
+
+  deleteMaker(id: number) {
+    this.openModal(
+      'Confirmar eliminación',
+      '¿Estás seguro de que deseas eliminar este maker?',
+      (confirmed) => {
+        if (confirmed) {
+          this.landingFileService.disableFile(id).subscribe({
+            next: () => {
+              this.makers = this.makers.filter((m) => m.idLandingFiles !== id);
+              if (this.currentIndex >= this.makers.length && this.makers.length > 0) {
+                this.currentIndex = this.makers.length - 1;
+              }
+            },
+            error: (err) => {
+              console.error('Error al eliminar maker:', err);
+              alert('No se pudo eliminar el maker.');
+            }
+          });
         }
-      },
-      error: (err) => {
-        console.error('Error al eliminar maker:', err);
-        alert('No se pudo eliminar el maker.');
       }
-    });
+    );
   }
 
   deleteHistory(id: number) {
-    if (!confirm('¿Estás seguro de que deseas eliminar esta imagen de historia?')) return;
-
-    this.landingFileService.disableFile(id).subscribe({
-      next: () => {
-        this.historyFiles = this.historyFiles.filter((h) => h.idLandingFiles !== id);
-        if (this.historyIndex >= this.historyFiles.length && this.historyFiles.length > 0) {
-          this.historyIndex = this.historyFiles.length - 1;
+    this.openModal(
+      'Confirmar eliminación',
+      '¿Estás seguro de que deseas eliminar esta imagen de historia?',
+      (confirmed) => {
+        if (confirmed) {
+          this.landingFileService.disableFile(id).subscribe({
+            next: () => {
+              this.historyFiles = this.historyFiles.filter((h) => h.idLandingFiles !== id);
+              if (this.historyIndex >= this.historyFiles.length && this.historyFiles.length > 0) {
+                this.historyIndex = this.historyFiles.length - 1;
+              }
+            },
+            error: (err) => {
+              console.error('Error al eliminar historia:', err);
+              alert('No se pudo eliminar la imagen de historia.');
+            }
+          });
         }
-      },
-      error: (err) => {
-        console.error('Error al eliminar historia:', err);
-        alert('No se pudo eliminar la imagen de historia.');
       }
-    });
+    );
   }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        alert('La imagen no puede superar los 5MB');
-        return;
-      }
-      this.selectedFile = file;
-      this.previewImage = URL.createObjectURL(this.selectedFile);
+      this.processMakerFile(input.files[0]);
     }
   }
 
   onHistoryFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        alert('La imagen no puede superar los 5MB');
-        return;
-      }
-      this.selectedHistoryFile = file;
-      this.previewHistoryImage = URL.createObjectURL(this.selectedHistoryFile);
+      this.processHistoryFile(input.files[0]);
     }
   }
 
@@ -208,14 +228,7 @@ export class AboutUsControlComponent implements OnInit {
   onDrop(event: DragEvent) {
     event.preventDefault();
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-      const file = event.dataTransfer.files[0];
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        alert('La imagen no puede superar los 5MB');
-        return;
-      }
-      this.selectedFile = file;
-      this.previewImage = URL.createObjectURL(this.selectedFile);
+      this.processMakerFile(event.dataTransfer.files[0]);
     }
   }
 
@@ -226,15 +239,90 @@ export class AboutUsControlComponent implements OnInit {
   onHistoryDrop(event: DragEvent) {
     event.preventDefault();
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-      const file = event.dataTransfer.files[0];
-      const maxSize = 5 * 1024 * 1024;
-      if (file.size > maxSize) {
-        alert('La imagen no puede superar los 5MB');
-        return;
-      }
-      this.selectedHistoryFile = file;
-      this.previewHistoryImage = URL.createObjectURL(this.selectedHistoryFile);
+      this.processHistoryFile(event.dataTransfer.files[0]);
     }
+  }
+
+  // Método para procesar archivos de makers con validación de aspect ratio 2:3
+  private processMakerFile(file: File): void {
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      alert('Solo se permiten archivos de imagen');
+      return;
+    }
+
+    // Validar tamaño del archivo (5MB máximo)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      alert('La imagen no puede superar los 5MB');
+      return;
+    }
+
+    // Crear vista previa temporal
+    const tempPreviewUrl = URL.createObjectURL(file);
+    this.previewImage = this.sanitizer.bypassSecurityTrustUrl(tempPreviewUrl);
+
+    // Validar aspect ratio 2:3
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      const targetRatio = 2 / 3;
+      const tolerance = 0.05; // 5% de tolerancia
+
+      if (Math.abs(aspectRatio - targetRatio) > tolerance) {
+        alert(`La imagen debe tener una relación de aspecto 2:3.\nTu imagen tiene una relación ${aspectRatio.toFixed(2)} (${img.width}x${img.height}px)`);
+        this.selectedFile = undefined;
+        this.previewImage = undefined;
+        URL.revokeObjectURL(tempPreviewUrl);
+      } else {
+        // Solo asignar el archivo si pasa la validación
+        this.selectedFile = file;
+      }
+    };
+
+    // Cargar la imagen para validación
+    img.src = tempPreviewUrl;
+  }
+
+  // Método para procesar archivos de historia con validación de aspect ratio 16:9
+  private processHistoryFile(file: File): void {
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      alert('Solo se permiten archivos de imagen');
+      return;
+    }
+
+    // Validar tamaño del archivo (5MB máximo)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      alert('La imagen no puede superar los 5MB');
+      return;
+    }
+
+    // Crear vista previa temporal
+    const tempPreviewUrl = URL.createObjectURL(file);
+    this.previewHistoryImage = this.sanitizer.bypassSecurityTrustUrl(tempPreviewUrl);
+
+    // Validar aspect ratio 16:9
+    const img = new Image();
+    img.onload = () => {
+      const aspectRatio = img.width / img.height;
+      const targetRatio = 16 / 9;
+      const tolerance = 0.05; // 5% de tolerancia
+
+      if (Math.abs(aspectRatio - targetRatio) > tolerance) {
+        alert(`La imagen debe tener una relación de aspecto 16:9.\nTu imagen tiene una relación ${aspectRatio.toFixed(2)} (${img.width}x${img.height}px)`);
+        this.selectedHistoryFile = undefined;
+        this.previewHistoryImage = undefined;
+        URL.revokeObjectURL(tempPreviewUrl);
+      } else {
+        // Solo asignar el archivo si pasa la validación
+        this.selectedHistoryFile = file;
+      }
+    };
+
+    // Cargar la imagen para validación
+    img.src = tempPreviewUrl;
   }
 
   uploadTeamMember() {
@@ -303,6 +391,8 @@ export class AboutUsControlComponent implements OnInit {
             safeUrl: this.sanitizeUrl(fileUrl),
           };
 
+          console.log("[Frontend] New maker added:", newMaker);
+
           this.makers = [...this.makers, newMaker];
           this.selectedFile = undefined;
           this.previewImage = undefined;
@@ -341,6 +431,8 @@ export class AboutUsControlComponent implements OnInit {
             ...response,
             safeUrl: this.sanitizeUrl(fileUrl),
           };
+
+          console.log("[Frontend] New history added:", newHistory);
 
           this.historyFiles = [...this.historyFiles, newHistory];
           this.selectedHistoryFile = undefined;
@@ -387,21 +479,28 @@ export class AboutUsControlComponent implements OnInit {
   }
 
   deleteTeamMember(id: number) {
-    if (!confirm('¿Estás seguro de que deseas eliminar este miembro del equipo?')) return;
-
-    this.landingFileService.disableFile(id).subscribe({
-      next: () => {
-        this.teamFiles = this.teamFiles.filter((m) => m.idLandingFiles !== id);
-        if (this.teamIndex >= this.teamFiles.length && this.teamFiles.length > 0) {
-          this.teamIndex = this.teamFiles.length - 1;
+    this.openModal(
+      'Confirmar eliminación',
+      '¿Estás seguro de que deseas eliminar este miembro del equipo?',
+      (confirmed) => {
+        if (confirmed) {
+          this.landingFileService.disableFile(id).subscribe({
+            next: () => {
+              this.teamFiles = this.teamFiles.filter((m) => m.idLandingFiles !== id);
+              if (this.teamIndex >= this.teamFiles.length && this.teamFiles.length > 0) {
+                this.teamIndex = this.teamFiles.length - 1;
+              }
+            },
+            error: (err) => {
+              console.error('Error al eliminar miembro del equipo:', err);
+              alert('No se pudo eliminar el miembro del equipo.');
+            }
+          });
         }
-      },
-      error: (err) => {
-        console.error('Error al eliminar miembro del equipo:', err);
-        alert('No se pudo eliminar el miembro del equipo.');
       }
-    });
+    );
   }
+
 
   prevMaker() {
     if (this.currentIndex > 0) {

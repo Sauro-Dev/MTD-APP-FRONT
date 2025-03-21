@@ -184,7 +184,7 @@ export class FileUploadComponent implements OnInit {
     this.showModal = true;
   }
 
-  // Método centralizado para procesar archivos seleccionados
+
   private processSelectedFile(file: File, type: 'news' | 'magazine'): boolean {
     // Validaciones
     if (!this.validatePdfExtension(file)) return false;
