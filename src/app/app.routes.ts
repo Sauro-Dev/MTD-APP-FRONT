@@ -41,7 +41,6 @@ export const appRoutes: Routes = [
         (m) => m.FormDetailComponent
       ),
     canActivate: [AdminGuard],
-    // Añade esta línea para cambiar el modo de renderizado:
     data: { renderMode: 'client' }
   },
   {

@@ -11,6 +11,19 @@ import { fileURLToPath } from 'node:url';
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 
+// Configuración específica para deshabilitar prerendering para rutas con parámetros
+const appConfig = {
+  renderOptions: {
+    inlineCriticalCss: true,
+    // Deshabilitar prerendering para rutas específicas
+    routes: {
+      '/form/:id': {
+        renderMode: 'client'
+      }
+    }
+  }
+};
+
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
