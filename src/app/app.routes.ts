@@ -41,13 +41,6 @@ export const appRoutes: Routes = [
         (m) => m.FormDetailComponent
       ),
     canActivate: [AdminGuard],
-    data: {
-      prerenderParams: [
-        { id: '1' },
-        { id: '2' },
-        { id: '3' }
-      ]
-    }
   },
   {
     path: 'no-auth',
