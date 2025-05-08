@@ -35,12 +35,14 @@ export const appRoutes: Routes = [
       ),
   },
   {
-    path: 'form/:id', // Nueva ruta para ver detalles de un formulario específico
+    path: 'form/:id',
     loadComponent: () =>
       import('./features/form-detail/form-detail.component').then(
         (m) => m.FormDetailComponent
       ),
-    canActivate: [AdminGuard], // Solo los administradores pueden ver los detalles del formulario
+    canActivate: [AdminGuard],
+    // Añade esta línea para cambiar el modo de renderizado:
+    data: { renderMode: 'client' }
   },
   {
     path: 'no-auth',
