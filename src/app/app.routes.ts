@@ -34,6 +34,8 @@ export const appRoutes: Routes = [
         (m) => m.FormComponent
       ),
   },
+  // Ruta comentada temporalmente para permitir el build
+  /*
   {
     path: 'form/:id',
     loadComponent: () =>
@@ -41,7 +43,11 @@ export const appRoutes: Routes = [
         (m) => m.FormDetailComponent
       ),
     canActivate: [AdminGuard],
+    data: {
+      renderMode: 'client'
+    }
   },
+  */
   {
     path: 'no-auth',
     loadComponent: () =>
